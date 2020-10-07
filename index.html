@@ -1,0 +1,35 @@
+<html>
+  <head></head>
+<script type=module>
+  import { URLPattern } from "./src/index.js";
+
+  window.URLPattern = URLPattern;
+
+  function assert(result, expected) {
+    console.log("Result:", result, ", Expected:", expected, "=>", result === expected ? "PASS" : "FAIL");
+  }
+
+  let pattern = new URLPattern({
+      baseURL: self.origin,
+      pathname: "/product/:name*",
+    });
+    
+  assert(pattern.test(self.origin + "/product/a/b"), true);
+
+  let relativePattern = new URLPattern({
+    baseURL: "https://example.com/shop",
+    pathname: "/product/:name*",
+  });
+
+  assert(relativePattern.test("https://example.com/product/a/b"), true);
+
+  const imagePattern = new URLPattern({
+    pathname: '/*.:imagetype(jpg|gif|png)'
+  });
+
+  let result = imagePattern.exec(self.origin + "/photo.jpg");
+
+  console.info(result)
+  assert(result.pathname.groups['imagetype'], "jpg");
+</script>
+</html>
