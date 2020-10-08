@@ -98,7 +98,7 @@ export class URLPattern {
     try {
       target = new URL(url); // allows string or URL object.
     } catch {
-      return false;
+      return null;
     }
 
     let result = {};
@@ -106,6 +106,10 @@ export class URLPattern {
       const value = this.#regexp[part].exec(target[part]);
 
       let groups = {};
+      if (!value) {
+        return null;
+      }
+
       for (let [i, key] of this.#keys[part].entries()) {
         if (typeof key.name === "string") {
           groups[key.name] = value[i + 1];
@@ -119,5 +123,67 @@ export class URLPattern {
     }
 
     return result;
+  }
+}
+
+export class URLPatternList {
+  #patterns = [];
+
+  constructor(list, options = {}) {
+    if (!Array.isArray(list)) {
+      throw TypeError;
+    }
+
+    const firstItem = list[0];
+    if (firstItem instanceof URLPattern) {
+      for (let pattern of list) {
+        if (!(pattern instanceof URLPattern)) {
+         throw TypeError;
+        }
+        this.#patterns.push(pattern);
+      }
+    } else {
+      try {
+        for (let patternInit of list) {
+          const init = Object.assign(Object.assign({}, options), patternInit);
+          this.#patterns.push(new URLPattern(init));
+        }
+      } catch {
+        throw TypeError;
+      }
+    }
+  }
+
+  test(url) {
+    let target;
+    try {
+      target = new URL(url); // allows string or URL object.
+    } catch {
+      return false;
+    }
+
+    for (let urlPattern of this.#patterns) {
+      if (urlPattern.test(target)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  exec(url) {
+    let target;
+    try {
+      target = new URL(url); // allows string or URL object.
+    } catch {
+      return null;
+    }
+
+    for (let urlPattern of this.#patterns) {
+      const value = urlPattern.exec(target);
+      if (value) {
+        return value;
+      }
+    }
+    return null;
   }
 }

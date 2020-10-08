@@ -1,7 +1,7 @@
 <html>
   <head></head>
 <script type=module>
-  import { URLPattern } from "./src/index.js";
+  import { URLPattern, URLPatternList } from "./src/index.js";
 
   window.URLPattern = URLPattern;
 
@@ -29,7 +29,31 @@
 
   let result = imagePattern.exec(self.origin + "/photo.jpg");
 
-  console.info(result)
+  console.info(result);
   assert(result.pathname.groups['imagetype'], "jpg");
+
+  let result2 = imagePattern.exec(self.origin + "/photo.jxl");
+  console.info(result2);
+
+  let p1 = new URLPattern({
+    baseURL: self.origin,
+    pathname: "/product/:name*",
+  });
+
+  let p2 = new URLPattern({
+    baseURL: self.origin,
+    pathname: "/employee/:name*",
+  });
+
+  let list = new URLPatternList([p1, p2]);
+  console.log(list.test(self.origin + "/product/a"));
+
+  let initlist = new URLPatternList([
+    { pathname: "/product/:name*" },
+    { pathname: "/product/:type*"}
+  ], { baseURL: self.origin });
+  let res = initlist.exec(self.origin + "/product/a");
+  assert(res.pathname.groups['name'], "a");
+
 </script>
 </html>
