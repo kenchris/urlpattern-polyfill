@@ -1,9 +1,14 @@
 <html>
   <head></head>
 <script type=module>
-  import { URLPattern, URLPatternList } from "./src/index.js";
+  import { URLPattern, URLPatternList, parseShorthand } from "./src/index.js";
 
   window.URLPattern = URLPattern;
+
+  console.table(parseShorthand("https://google.com/*:hest?/?q=s#hash"));
+  console.table(parseShorthand("https://google.com/foo/*?/?q=s#hash"));
+  console.table(parseShorthand("https://google.com/bar/(.*)?/?q=s#hash"));
+  console.table(parseShorthand("/product/:type*"));
 
   function assert(result, expected) {
     console.log("Result:", result, ", Expected:", expected, "=>", result === expected ? "PASS" : "FAIL");
@@ -13,7 +18,7 @@
       baseURL: self.origin,
       pathname: "/product/:name*",
     });
-    
+
   assert(pattern.test(self.origin + "/product/a/b"), true);
 
   let relativePattern = new URLPattern({
@@ -54,6 +59,12 @@
   ], { baseURL: self.origin });
   let res = initlist.exec(self.origin + "/product/a");
   assert(res.pathname.groups['name'], "a");
+
+  let initlist2 = new URLPatternList([
+    "/product/:name*", "/product/:type*"
+  ], { baseURL: self.origin });
+  let res2 = initlist2.exec(self.origin + "/product/a");
+  assert(res2.pathname.groups['name'], "a");
 
 </script>
 </html>
