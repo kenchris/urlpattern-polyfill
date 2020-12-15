@@ -5,12 +5,19 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "devDependencies": {
+    "ava": "^3.14.0",
+    "esm": "^3.2.25",
     "rimraf": "^3.0.2",
     "typescript": "^4.1.3"
   },
   "scripts": {
     "build": "rimraf dist/ && tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ava"
+  },
+  "ava": {
+    "require": [
+      "esm"
+    ]
   },
   "author": "",
   "license": "MIT"
