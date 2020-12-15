@@ -5,11 +5,6 @@
 
   window.URLPattern = URLPattern;
 
-  console.table(parseShorthand("https://google.com/*:hest?/?q=s#hash"));
-  console.table(parseShorthand("https://google.com/foo/*?/?q=s#hash"));
-  console.table(parseShorthand("https://google.com/bar/(.*)?/?q=s#hash"));
-  console.table(parseShorthand("/product/:type*"));
-
   function assert(result, expected) {
     console.log("Result:", result, ", Expected:", expected, "=>", result === expected ? "PASS" : "FAIL");
   }
