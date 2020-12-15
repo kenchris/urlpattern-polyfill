@@ -1,6 +1,6 @@
-import { pathToRegexp } from "./path-to-regex-1.7.esm.js";
+import { pathToRegexp } from "./path-to-regex-6.2";
 
-export function parseShorthand(str) {
+export function parseShorthand(str: string) {
   let protocol = "";
   let hostname = "";
   let pathname = "";
@@ -36,21 +36,49 @@ export function parseShorthand(str) {
   return { protocol, hostname, pathname, search, hash }
 }
 
-export class URLPattern {
-  #pattern = {};
-  #regexp = {};
-  #keys = {};
+interface URLPatternOptions {
+  baseURL?: string;
+  username?: string;
+  password?: string;
+  protocol?: string;
+  hostname?: string;
+  port?: string;
+  pathname?: string;
+  search?: string;
+  hash?: string;
+}
 
-  constructor(...args) {
+interface URLPatternValues {
+  [key: string]: string;
+  pathname: string;
+  protocol: string;
+  username: string;
+  password: string;
+  hostname: string;
+  port: string;
+  search: string;
+  hash: string;
+}
+
+interface URLPatternResult {
+  [key:string]: { value:any, groups:any };
+}
+
+export class URLPattern {
+  private pattern: URLPatternValues;
+  private regexp: any = {};
+  private keys: any = {};
+
+  constructor(...args: any) {
     let baseURL = null;
-    let options = {};
+    let options: URLPatternOptions;
 
     if (typeof args[0] === "object") {
       options = args[0];
       baseURL = options.baseURL;
     } 
     // shorthand
-    else if (typeof args[0] === string) {
+    else if (typeof args[0] === "string") {
       options = parseShorthand(args[0]);
       if (args[1]) {
         if (typeof args[1] === "string") {
@@ -81,10 +109,10 @@ export class URLPattern {
       throw TypeError;
     }
 
-    // Set default value depending on availablility of baseURL or not.
+    // Set default value depending on availability of baseURL or not.
     let base;
     if (!baseURL) {
-      this.#pattern = {
+      this.pattern = {
         pathname: "/*",
         protocol: "*",
         username: "*",
@@ -100,7 +128,7 @@ export class URLPattern {
       } catch {
         throw TypeError;
       }
-      this.#pattern = {
+      this.pattern = {
         pathname: base.pathname,
         protocol: base.protocol,
         username: base.username,
@@ -113,31 +141,31 @@ export class URLPattern {
     }
 
     // Override with arguments given to ctor.
-    if (pathname) this.#pattern.pathname = options.pathname;
-    if (protocol) this.#pattern.protocol = options.protocol;
-    if (username) this.#pattern.username = options.username;
-    if (password) this.#pattern.password = options.password;
-    if (hostname) this.#pattern.hostname = options.hostname;
-    if (port) this.#pattern.port = options.port;
-    if (search) this.#pattern.search = options.search;
-    if (hash) this.#pattern.hash = options.hash;
+    if (options.pathname) this.pattern.pathname = options.pathname;
+    if (options.protocol) this.pattern.protocol = options.protocol;
+    if (options.username) this.pattern.username = options.username;
+    if (options.password) this.pattern.password = options.password;
+    if (options.hostname) this.pattern.hostname = options.hostname;
+    if (options.port) this.pattern.port = options.port;
+    if (options.search) this.pattern.search = options.search;
+    if (options.hash) this.pattern.hash = options.hash;
 
     // If the baseURL is missing and the pathname is relative then an exception is thrown
-    let isRelativePath = !this.#pattern.pathname.startsWith("/");
+    let isRelativePath = !this.pattern.pathname.startsWith("/");
     if (isRelativePath) {
       if (!baseURL) {
         throw TypeError;
       } else {
         // Resolve against baseURL. E.g. if the pattern is "*hello" and the base URL is
         // "https://example.com/foo/bar", then the final path pattern is "/foo/*hello".
-        this.#pattern.pathname = new URL(baseURL, this.#pattern.pathname).pathname;
+        this.pattern.pathname = new URL(baseURL, this.pattern.pathname).pathname;
       }
     }
 
     try {
-      for (let part in this.#pattern) {
-        this.#keys[part] = [];
-        this.#regexp[part] = pathToRegexp(this.#pattern[part], this.#keys[part], { strict: true, end: true });
+      for (let part in this.pattern) {
+        this.keys[part] = [];
+        this.regexp[part] = pathToRegexp(this.pattern[part], this.keys[part], { strict: true, end: true });
         //console.log(part, this.#pattern[part], this.#regexp[part]);
       }
     } catch {
@@ -146,16 +174,17 @@ export class URLPattern {
     }
   }
 
-  test(url) {
-    let target;
+  test(url: string) {
+    let target: URL;
     try {
       target = new URL(url); // allows string or URL object.
     } catch {
       return false;
     }
 
-    for (let part in this.#pattern) {
-      if (!this.#regexp[part].test(target[part])) {
+    for (let part in this.pattern) {
+      // @ts-ignore
+      if (!this.regexp[part].test(target[part])) {
         return false;
       }
     }
@@ -163,7 +192,7 @@ export class URLPattern {
     return true;
   }
 
-  exec(url) {
+  exec(url: string): URLPatternResult | null {
     let target;
     try {
       target = new URL(url); // allows string or URL object.
@@ -171,16 +200,17 @@ export class URLPattern {
       return null;
     }
 
-    let result = {};
-    for (let part in this.#pattern) {
-      const value = this.#regexp[part].exec(target[part]);
+    let result: URLPatternResult = {};
+    for (let part in this.pattern) {
+      // @ts-ignore
+      const value = this.regexp[part].exec(target[part]);
 
-      let groups = {};
+      let groups = {} as Array<string>;
       if (!value) {
         return null;
       }
 
-      for (let [i, key] of this.#keys[part].entries()) {
+      for (let [i, key] of this.keys[part].entries()) {
         if (typeof key.name === "string") {
           groups[key.name] = value[i + 1];
         }
@@ -197,9 +227,9 @@ export class URLPattern {
 }
 
 export class URLPatternList {
-  #patterns = [];
+  private patterns: Array<URLPattern> = [];
 
-  constructor(list, options = {}) {
+  constructor(list: any, options = {}) {
     if (!Array.isArray(list)) {
       throw TypeError;
     }
@@ -210,7 +240,7 @@ export class URLPatternList {
         if (!(pattern instanceof URLPattern)) {
          throw TypeError;
         }
-        this.#patterns.push(pattern);
+        this.patterns.push(pattern);
       }
     } else {
       try {
@@ -224,7 +254,7 @@ export class URLPatternList {
             throw TypeError;
           }
 
-          this.#patterns.push(new URLPattern(init));
+          this.patterns.push(new URLPattern(init));
         }
       } catch {
         throw TypeError;
@@ -232,32 +262,30 @@ export class URLPatternList {
     }
   }
 
-  test(url) {
-    let target;
+  test(url: string) {
     try {
-      target = new URL(url); // allows string or URL object.
+      new URL(url); // allows string or URL object.
     } catch {
       return false;
     }
 
-    for (let urlPattern of this.#patterns) {
-      if (urlPattern.test(target)) {
+    for (let urlPattern of this.patterns) {
+      if (urlPattern.test(url)) {
         return true;
       }
     }
     return false;
   }
 
-  exec(url) {
-    let target;
+  exec(url: string): URLPatternResult | null {
     try {
-      target = new URL(url); // allows string or URL object.
+      new URL(url); // allows string or URL object.
     } catch {
       return null;
     }
 
-    for (let urlPattern of this.#patterns) {
-      const value = urlPattern.exec(target);
+    for (let urlPattern of this.patterns) {
+      const value = urlPattern.exec(url);
       if (value) {
         return value;
       }
