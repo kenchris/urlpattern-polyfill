@@ -5,7 +5,7 @@ import {
 } from "./path-to-regex-6.2";
 
 const expandStar = (str: string): string => {
-  return str.replace(/(?<!\(\.)\*/gi, "(.*)");
+  return str; //.replace(/(?<!\(\.)\*/gi, "(.*)");
 }
 
 // The default wildcard pattern used for a component when the constructor
@@ -107,8 +107,9 @@ interface URLPatternValues {
   hash: string;
 }
 
-interface URLPatternResult {
-  [key:string]: { value:any, groups:any };
+interface URLPatternComponentResult {
+  input?: any,
+  [key:string]: { input: any, groups: any } | any;
 }
 
 function extractValues(url: string) {
@@ -170,9 +171,13 @@ function applyInit(init: URLPatternInit): URLPatternValues {
   if (init.port) port = init.port;
   if (init.pathname) {
     pathname = init.pathname;
+    if (init.baseURL) {
+      pathname = new URL(pathname, init.baseURL).pathname;
+    }
     // TODO: Compare with updates when it handles relative pathnames
     // If the baseURL is missing and the pathname is relative then an exception is thrown
-    let isRelativePath = !pathname.startsWith("/");
+    /*
+    let isRelativePath = !["/", "(", ":"].includes(pathname[0]);
     if (isRelativePath) {
       if (!init.baseURL) {
         throw new TypeError('Missing baseURL');
@@ -181,11 +186,11 @@ function applyInit(init: URLPatternInit): URLPatternValues {
         // "https://example.com/foo/bar", then the final path pattern is "/foo/*hello".
         pathname = new URL(init.baseURL, pathname).pathname;
       }
+      if (!pathname.length || pathname[0] != '/') {
+        throw new TypeError(`Could not resolve absolute pathname for '${pathname}'.`);
+      }
     }
-
-    if (!pathname.length || pathname[0] != '/') {
-      throw new TypeError(`Could not resolve absolute pathname for '${pathname}'.`);
-    }
+    */
   }
   if (init.search) search = init.search;
   if (init.hash) hash = init.hash;
@@ -233,6 +238,7 @@ export class URLPattern {
 
     for (let component in this.pattern) {
       let options;
+      let defaultPattern = DEFAULT_PATTERN;
       const pattern = expandStar(this.pattern[component]);
       this.keys[component] = [];
       switch(component) {
@@ -241,9 +247,13 @@ export class URLPattern {
           break;
         case "pathname":
           options = PATHNAME_OPTIONS;
+          defaultPattern = DEFAULT_PATHNAME_PATTERN;
           break;
         default:
           options = DEFAULT_OPTIONS;
+      }
+      if (pattern === defaultPattern) {
+        continue;
       }
       try {
         this.regexp[component] = pathToRegexp(pattern, this.keys[component], options);
@@ -263,6 +273,9 @@ export class URLPattern {
     }
 
     for (let part in this.pattern) {
+      if (!this.regexp[part]) {
+        continue;
+      }
       // @ts-ignore
       let result = this.regexp[part].test(values[part]);
       // @ts-ignore
@@ -275,39 +288,67 @@ export class URLPattern {
     return true;
   }
 
-  exec(url: string): URLPatternResult | null {
+  exec(input: string | URLPatternInit): URLPatternComponentResult | null | undefined | number {
     let values: URLPatternValues;
-    try {
-      values = extractValues(url); // allows string or URL object.
-    } catch {
-      return null;
+    if (typeof input === "undefined") {
+      return;
     }
 
-    let result: URLPatternResult = {};
-    for (let part in this.pattern) {
+    if (typeof input === "object") {
+      values = applyInit(input);
+      values.pathname = new URL(values.pathname, input.baseURL || "https://example.com").pathname;
+    } else {
+      try {
+        values = extractValues(input); // allows string or URL object.
+      } catch {
+        return null;
+      }
+    }
+
+    let result: URLPatternComponentResult | null = null;
+    for (let component in this.pattern) {
+      if (!this.regexp[component]) {
+        continue;
+      }
+
       // @ts-ignore
-      const value = this.regexp[part].exec(values[part]);
+      const match = this.regexp[component].exec(values[component]);
+      console.log(this.regexp[component], values[component], match);
 
       let groups = {} as Array<string>;
-      if (!value) {
+      if (!match) {
         return null;
       }
 
-      for (let [i, key] of this.keys[part].entries()) {
-        if (typeof key.name === "string") {
-          groups[key.name] = value[i + 1];
+      for (let [i, key] of this.keys[component].entries()) {
+        if (typeof key.name === "string" || typeof key.name === "number") {
+          let value = match[i + 1];
+          groups[key.name] = value || '';
         }
       }
 
-      result[part] = {
-        value,
-        groups: Object.keys(groups).length ? groups : undefined
-      };
+      if (!result) result = {};
+
+      if (!Object.keys(groups).length && !match.input.length) {
+        if (!result["exactly_empty_components"]) {
+          result["exactly_empty_components"] = [];
+        }
+        result["exactly_empty_components"].push(component);
+      } else {
+        result[component] = {
+          input: match.input,
+          groups
+        };
+      }
+
+      result.input = input;
     }
 
     return result;
   }
 }
+
+// -------------
 
 export class URLPatternList {
   private patterns: Array<URLPattern> = [];
@@ -360,7 +401,7 @@ export class URLPatternList {
     return false;
   }
 
-  exec(url: string): URLPatternResult | null {
+  exec(url: string): URLPatternComponentResult | null | number {
     try {
       new URL(url); // allows string or URL object.
     } catch {

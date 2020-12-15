@@ -1,8 +1,9 @@
 import test from 'ava';
-import {URLPattern, URLPatternList, parseShorthand} from './dist/index.js';
+import {readFileSync} from 'fs';
+import {URLPattern, parseShorthand} from './dist/index.js';
 
 const baseURL = 'https://example.com';
-
+/*
 test('shorthands 1', t => {
   let {protocol, hostname, pathname, search, hash} = parseShorthand('https://google.com/*:hest?/?q=s#hash');
 
@@ -73,3 +74,18 @@ test('JavaScript URL routing 2/2', t => {
   t.is(result.pathname.groups['product'], 'videos');
   t.is(result.pathname.groups['param'], '12');
 });
+*/
+
+let rawdata = readFileSync('urlpatterntestdata.json');
+let data = JSON.parse(rawdata);
+
+let i = 0;
+for (let { pattern, input, expected } of data) {
+  //i++; if (i !== 105) { continue; }
+
+  test(`Test data ${i++}: ${JSON.stringify(pattern)} matching ${JSON.stringify(input)}`, t => {
+    const urlPattern = new URLPattern(pattern);
+    const result = urlPattern.exec(input);
+    t.deepEqual(result, expected);
+  });
+}
