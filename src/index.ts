@@ -1,5 +1,9 @@
 import { pathToRegexp } from "./path-to-regex-6.2";
 
+const expandStar = (str: string): string => {
+  return str.replace(/(?<!\(\.)\*/gi, "(.*)");
+}
+
 export function parseShorthand(str: string) {
   let protocol = "";
   let hostname = "";
@@ -162,10 +166,15 @@ export class URLPattern {
       }
     }
 
+    //console.log(JSON.stringify(this.pattern));
+
+    this.pattern.protocol = this.pattern.protocol.replace(":", "\\:");
+
     try {
       for (let part in this.pattern) {
         this.keys[part] = [];
-        this.regexp[part] = pathToRegexp(this.pattern[part], this.keys[part], { strict: true, end: true });
+        //console.log(`${part}: ${expandStar(this.pattern[part])}`);
+        this.regexp[part] = pathToRegexp(expandStar(this.pattern[part]), this.keys[part], { strict: true, end: true });
         //console.log(part, this.#pattern[part], this.#regexp[part]);
       }
     } catch {
@@ -184,7 +193,10 @@ export class URLPattern {
 
     for (let part in this.pattern) {
       // @ts-ignore
-      if (!this.regexp[part].test(target[part])) {
+      let result = this.regexp[part].test(target[part]);
+      // @ts-ignore
+      // console.log(part, this.regexp[part], target[part], result);
+      if (!result) {
         return false;
       }
     }
