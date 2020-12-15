@@ -90,7 +90,7 @@ export class URLPattern {
     } 
     // invalid arguments
     else {
-      throw TypeError;
+      throw new TypeError('Incorrect params passed');
     }
     
     const {
@@ -106,7 +106,7 @@ export class URLPattern {
 
     // If none of the URL part patterns are specified then the constructor will throw an exception. 
     if (!protocol && !username && !password && !hostname && !port && !pathname && !search && !hash) {
-      throw TypeError;
+      throw new TypeError('missing parts in URL');
     }
 
     // Set default value depending on availability of baseURL or not.
@@ -126,7 +126,7 @@ export class URLPattern {
       try {
         base = new URL(baseURL);
       } catch {
-        throw TypeError;
+        throw new TypeError('error creating base');
       }
       this.pattern = {
         pathname: base.pathname,
@@ -154,7 +154,7 @@ export class URLPattern {
     let isRelativePath = !this.pattern.pathname.startsWith("/");
     if (isRelativePath) {
       if (!baseURL) {
-        throw TypeError;
+        throw new TypeError('missing base');
       } else {
         // Resolve against baseURL. E.g. if the pattern is "*hello" and the base URL is
         // "https://example.com/foo/bar", then the final path pattern is "/foo/*hello".
@@ -170,7 +170,7 @@ export class URLPattern {
       }
     } catch {
       // If a pattern is illegal the constructor will throw an exception
-      throw TypeError;
+      throw new TypeError('illegal pattern');
     }
   }
 
