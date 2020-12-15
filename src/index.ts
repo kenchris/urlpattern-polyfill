@@ -1,7 +1,50 @@
-import { pathToRegexp } from "./path-to-regex-6.2";
+import {
+  pathToRegexp,
+  TokensToRegexpOptions,
+  ParseOptions
+} from "./path-to-regex-6.2";
 
 const expandStar = (str: string): string => {
   return str.replace(/(?<!\(\.)\*/gi, "(.*)");
+}
+
+// The default wildcard pattern used for a component when the constructor
+// input does not provide an explicit value.
+const DEFAULT_PATTERN = "(.*)";
+
+// The default wildcard pattern for the pathname component.
+const DEFAULT_PATHNAME_PATTERN = "/(.*)";
+
+// default to strict mode and case sensitivity.  In addition, most
+// components have no concept of a delimiter or prefix character.
+const DEFAULT_OPTIONS: TokensToRegexpOptions & ParseOptions = {
+  delimiter: "",
+  prefixes: "",
+  sensitive: true,
+  strict: true
+}
+
+// The options to use for hostname patterns.  This uses a
+// "." delimiter controlling how far a named group like ":bar" will match
+// by default.  Note, hostnames are case insensitive but we require case
+// sensitivity here.  This assumes that the hostname values have already
+// been normalized to lower case as in URL().
+const HOSTNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
+  delimiter: ".",
+  prefixes: "",
+  sensitive: true,
+  strict: true
+}
+
+// The options to use for pathname patterns.  This uses a
+// "/" delimiter controlling how far a named group like ":bar" will match
+// by default.  It also configures "/" to be treated as an automatic
+// prefix before groups.
+const PATHNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
+  delimiter: "/",
+  prefixes: "/",
+  sensitive: true,
+  strict: true
 }
 
 export function parseShorthand(str: string) {
@@ -40,7 +83,7 @@ export function parseShorthand(str: string) {
   return { protocol, hostname, pathname, search, hash }
 }
 
-interface URLPatternOptions {
+interface URLPatternInit {
   baseURL?: string;
   username?: string;
   password?: string;
@@ -68,134 +111,162 @@ interface URLPatternResult {
   [key:string]: { value:any, groups:any };
 }
 
+function extractValues(url: string) {
+  const o = new URL(url); // May throw.
+  return {
+    protocol: o.protocol.substring(0, o.protocol.length - 1), // not optional
+    username: o.username,
+    password: o.password,
+    hostname: o.hostname,
+    port: o.port,
+    pathname: o.pathname,
+    search: o.search != "" ? o.search.substring(1, o.search.length) : "",
+    hash: o.hash != "" ? o.hash.substring(1, o.hash.length) : ""
+  }
+}
+
+// A utility method that takes a URLPatternInit, splits it apart, and applies
+// the individual component values in the given set of strings.  The strings
+// are only applied if a value is present in the init structure.
+function applyInit(init: URLPatternInit): URLPatternValues {
+  let pathname = DEFAULT_PATHNAME_PATTERN;
+  let protocol = DEFAULT_PATTERN;
+  let username = DEFAULT_PATTERN;
+  let password = DEFAULT_PATTERN;
+  let hostname = DEFAULT_PATTERN;
+  let port = DEFAULT_PATTERN;
+  let search = DEFAULT_PATTERN;
+  let hash = DEFAULT_PATTERN;
+
+  // If there is a baseURL we need to apply its component values first.  The
+  // rest of the URLPatternInit structure will then later override these
+  // values.  Note, the baseURL will always set either an empty string or
+  // longer value for each considered component.  We do not allow null strings
+  // to persist for these components past this phase since they should no
+  // longer be treated as wildcards.
+  let baseURL;
+  if (init.baseURL) {
+    try {
+      baseURL = new URL(init.baseURL);
+      protocol = baseURL.protocol ? baseURL.protocol.substring(0, baseURL.protocol.length - 1) : "";
+      username = baseURL.username ? baseURL.username : "";
+      password = baseURL.password ? baseURL.password : "";
+      hostname = baseURL.hostname ? baseURL.hostname : "";
+      port = baseURL.port ? baseURL.port : "";
+      pathname = baseURL.pathname ? baseURL.pathname : "/";
+      // Do no propagate search or hash from the base URL.  This matches the
+      // behavior when resolving a relative URL against a base URL.
+    } catch {
+      throw new TypeError(`Invalid baseURL '${init.baseURL}'.`);
+    }
+  }
+
+  // Apply the URLPatternInit component values on top of the default and
+  // baseURL values.
+  if (init.protocol) protocol = init.protocol;
+  if (init.username) username = init.username;
+  if (init.password) password = init.password;
+  if (init.hostname) hostname = init.hostname;
+  if (init.port) port = init.port;
+  if (init.pathname) {
+    pathname = init.pathname;
+    // TODO: Compare with updates when it handles relative pathnames
+    // If the baseURL is missing and the pathname is relative then an exception is thrown
+    let isRelativePath = !pathname.startsWith("/");
+    if (isRelativePath) {
+      if (!init.baseURL) {
+        throw new TypeError('Missing baseURL');
+      } else {
+        // Resolve against baseURL. E.g. if the pattern is "*hello" and the base URL is
+        // "https://example.com/foo/bar", then the final path pattern is "/foo/*hello".
+        pathname = new URL(init.baseURL, pathname).pathname;
+      }
+    }
+
+    if (!pathname.length || pathname[0] != '/') {
+      throw new TypeError(`Could not resolve absolute pathname for '${pathname}'.`);
+    }
+  }
+  if (init.search) search = init.search;
+  if (init.hash) hash = init.hash;
+
+  return {
+    pathname,
+    protocol,
+    username,
+    password,
+    hostname,
+    port,
+    search,
+    hash
+  }
+}
+
 export class URLPattern {
   private pattern: URLPatternValues;
   private regexp: any = {};
   private keys: any = {};
 
   constructor(...args: any) {
-    let baseURL = null;
-    let options: URLPatternOptions;
+    let init: URLPatternInit;
 
     if (typeof args[0] === "object") {
-      options = args[0];
-      baseURL = options.baseURL;
-    } 
+      init = args[0];
+    }
     // shorthand
     else if (typeof args[0] === "string") {
-      options = parseShorthand(args[0]);
+      init = parseShorthand(args[0]);
       if (args[1]) {
         if (typeof args[1] === "string") {
-          baseURL = args[1];
+          init.baseURL = args[1];
         } else {
           throw TypeError;
         }
       }
-    } 
+    }
     // invalid arguments
     else {
       throw new TypeError('Incorrect params passed');
     }
-    
-    const {
-      protocol,
-      username,
-      password,
-      hostname,
-      port,
-      pathname,
-      search,
-      hash
-    } = options;
 
-    // If none of the URL part patterns are specified then the constructor will throw an exception. 
-    if (!protocol && !username && !password && !hostname && !port && !pathname && !search && !hash) {
-      throw new TypeError('missing parts in URL');
-    }
+    this.pattern = applyInit(init);
 
-    // Set default value depending on availability of baseURL or not.
-    let base;
-    if (!baseURL) {
-      this.pattern = {
-        pathname: "/*",
-        protocol: "*",
-        username: "*",
-        password: "*",
-        hostname: "*",
-        port: "*",
-        search: "*",
-        hash: "*"
-      } 
-    } else {
+    for (let component in this.pattern) {
+      let options;
+      const pattern = expandStar(this.pattern[component]);
+      this.keys[component] = [];
+      switch(component) {
+        case "hostname":
+          options = HOSTNAME_OPTIONS;
+          break;
+        case "pathname":
+          options = PATHNAME_OPTIONS;
+          break;
+        default:
+          options = DEFAULT_OPTIONS;
+      }
       try {
-        base = new URL(baseURL);
+        this.regexp[component] = pathToRegexp(pattern, this.keys[component], options);
       } catch {
-        throw new TypeError('error creating base');
+        // If a pattern is illegal the constructor will throw an exception
+        throw new TypeError(`Invalid ${component} pattern '${this.pattern[component]}'.`);
       }
-      this.pattern = {
-        pathname: base.pathname,
-        protocol: base.protocol,
-        username: base.username,
-        password: base.password,
-        hostname: base.hostname,
-        port: base.port,
-        search: base.search,
-        hash: base.hash
-      }
-    }
-
-    // Override with arguments given to ctor.
-    if (options.pathname) this.pattern.pathname = options.pathname;
-    if (options.protocol) this.pattern.protocol = options.protocol;
-    if (options.username) this.pattern.username = options.username;
-    if (options.password) this.pattern.password = options.password;
-    if (options.hostname) this.pattern.hostname = options.hostname;
-    if (options.port) this.pattern.port = options.port;
-    if (options.search) this.pattern.search = options.search;
-    if (options.hash) this.pattern.hash = options.hash;
-
-    // If the baseURL is missing and the pathname is relative then an exception is thrown
-    let isRelativePath = !this.pattern.pathname.startsWith("/");
-    if (isRelativePath) {
-      if (!baseURL) {
-        throw new TypeError('missing base');
-      } else {
-        // Resolve against baseURL. E.g. if the pattern is "*hello" and the base URL is
-        // "https://example.com/foo/bar", then the final path pattern is "/foo/*hello".
-        this.pattern.pathname = new URL(baseURL, this.pattern.pathname).pathname;
-      }
-    }
-
-    //console.log(JSON.stringify(this.pattern));
-
-    this.pattern.protocol = this.pattern.protocol.replace(":", "\\:");
-
-    try {
-      for (let part in this.pattern) {
-        this.keys[part] = [];
-        //console.log(`${part}: ${expandStar(this.pattern[part])}`);
-        this.regexp[part] = pathToRegexp(expandStar(this.pattern[part]), this.keys[part], { strict: true, end: true });
-        //console.log(part, this.#pattern[part], this.#regexp[part]);
-      }
-    } catch {
-      // If a pattern is illegal the constructor will throw an exception
-      throw new TypeError('illegal pattern');
     }
   }
 
   test(url: string) {
-    let target: URL;
+    let values: URLPatternValues;
     try {
-      target = new URL(url); // allows string or URL object.
+      values = extractValues(url); // allows string or URL object.
     } catch {
       return false;
     }
 
     for (let part in this.pattern) {
       // @ts-ignore
-      let result = this.regexp[part].test(target[part]);
+      let result = this.regexp[part].test(values[part]);
       // @ts-ignore
-      // console.log(part, this.regexp[part], target[part], result);
+      //console.log(part, this.regexp[part], values[part], result);
       if (!result) {
         return false;
       }
@@ -205,9 +276,9 @@ export class URLPattern {
   }
 
   exec(url: string): URLPatternResult | null {
-    let target;
+    let values: URLPatternValues;
     try {
-      target = new URL(url); // allows string or URL object.
+      values = extractValues(url); // allows string or URL object.
     } catch {
       return null;
     }
@@ -215,7 +286,7 @@ export class URLPattern {
     let result: URLPatternResult = {};
     for (let part in this.pattern) {
       // @ts-ignore
-      const value = this.regexp[part].exec(target[part]);
+      const value = this.regexp[part].exec(values[part]);
 
       let groups = {} as Array<string>;
       if (!value) {
