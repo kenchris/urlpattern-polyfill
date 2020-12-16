@@ -275,8 +275,8 @@ function extractValues(url: string): URLPatternInit {
     hostname: o.hostname,
     port: o.port,
     pathname: o.pathname,
-    search: o.search != "" ? o.search.substring(1, o.search.length) : "",
-    hash: o.hash != "" ? o.hash.substring(1, o.hash.length) : ""
+    search: o.search != "" ? o.search.substring(1, o.search.length) : undefined,
+    hash: o.hash != "" ? o.hash.substring(1, o.hash.length) : undefined
   }
 }
 
@@ -295,10 +295,10 @@ function applyInit(o: URLPatternValues, init: URLPatternInit, isPattern: boolean
     try {
       baseURL = new URL(init.baseURL);
       o.protocol = baseURL.protocol ? baseURL.protocol.substring(0, baseURL.protocol.length - 1) : "";
-      o.username = baseURL.username ? baseURL.username : "";
-      o.password = baseURL.password ? baseURL.password : "";
-      o.hostname = baseURL.hostname ? baseURL.hostname : "";
-      o.port = baseURL.port ? baseURL.port : "";
+      o.username = baseURL.username;
+      o.password = baseURL.password;
+      o.hostname = baseURL.hostname;
+      o.port = baseURL.port;
       o.pathname = baseURL.pathname ? baseURL.pathname : "/";
       // Do no propagate search or hash from the base URL.  This matches the
       // behavior when resolving a relative URL against a base URL.
@@ -440,16 +440,7 @@ export class URLPattern {
   }
 
   exec(input: string | URLPatternInit): URLPatternComponentResult | null | undefined | number {
-    let values: URLPatternValues = {
-      pathname: '',
-      protocol: '',
-      username: '',
-      password: '',
-      hostname: '',
-      port: '',
-      search: '',
-      hash: ''
-    };
+    let values: URLPatternValues = {};
 
     if (typeof input === "undefined") {
       return;
@@ -461,9 +452,6 @@ export class URLPattern {
       } else {
         values = applyInit(values, extractValues(input), false); // allows string or URL object.
       }
-      if (values.protocol && values.port === defaultPortForProtocol(values.protocol)) {
-        values.port = '';
-      }
     } catch {
       return null;
     }
@@ -472,20 +460,26 @@ export class URLPattern {
 
     let result: URLPatternComponentResult | null = null;
     for (let component in this.pattern) {
-      console.log("component/pattern/value", component, this.pattern[component], values[component]);
-      if (component === "pathname" && values[component] == '' && this.pattern[component] === DEFAULT_PATHNAME_PATTERN)
-        continue;
+      //console.log("component/pattern/value", component, this.pattern[component], values[component]);
+      if (!values[component]) {
+        if (component === "pathname" && this.pattern[component] === DEFAULT_PATHNAME_PATTERN)
+          continue;
 
-      if (component !== "pathname" && values[component] == '' && this.pattern[component] === DEFAULT_PATTERN)
-        continue;
+        if (component !== "pathname" && this.pattern[component] === DEFAULT_PATTERN)
+          continue;
+      }
 
-      // @ts-ignore
-      const encoded = encodeURIComponent(decodeURIComponent(values[component]))
-        .replaceAll('%3D', '=').replaceAll('%2F', '/');
+      let match;
+      let portMatchFix = component == "port" && values.protocol && values.port === defaultPortForProtocol(values.protocol)
+      if (portMatchFix) {
+        // @ts-ignore
+        match = this.regexp[component].exec('');
+      } else {
+        // @ts-ignore
+        match = this.regexp[component].exec(values[component] || '');
+      }
 
-      // @ts-ignore
-      const match = this.regexp[component].exec(encoded);
-      console.log("regex, value, match", component, this.regexp[component], encoded, match);
+      //console.log("regex, value, match", component, this.regexp[component], values[component], match);
 
       let groups = {} as Array<string>;
       if (!match) {
