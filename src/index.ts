@@ -413,24 +413,24 @@ export class URLPattern {
       return;
     }
 
-    if (typeof input === "object") {
-      values = applyInit(values, input, typeof input !== "string");
-    } else {
-      try {
+    try {
+      if (typeof input === "object") {
+        values = applyInit(values, input, typeof input !== "string");
+      } else {
         values = applyInit(values, extractValues(input), typeof input !== "string"); // allows string or URL object.
-        if (values.pathname) {
-          const leadingSlash = values.pathname[0] == "/";
-          values.pathname = new URL(values.pathname, "https://example.com").pathname;
-          if (!leadingSlash) {
-            values.pathname = values.pathname.substring(1, values.pathname.length);
-          }
+      } 
+      if (values.pathname) {
+        const leadingSlash = values.pathname[0] == "/";
+        values.pathname = new URL(values.pathname, "https://example.com").pathname;
+        if (!leadingSlash) {
+          values.pathname = values.pathname.substring(1, values.pathname.length);
         }
-        if (values.hostname) {
-          new URL("https://" + values.hostname);
-        }
-      } catch {
-        return null;
       }
+      if (values.hostname) {
+        new URL("https://" + values.hostname);
+      }
+    } catch {
+      return null;
     }
 
     console.log("values", values);
