@@ -406,32 +406,42 @@ export class URLPattern {
   }
 
   test(input: string) {
-    let values: URLPatternValues = {
-      pathname: '',
-      protocol: '',
-      username: '',
-      password: '',
-      hostname: '',
-      port: '',
-      search: '',
-      hash: ''
-    };
+    let values: URLPatternValues = {};
+
+    if (typeof input === "undefined") {
+      return;
+    }
 
     try {
-      values = applyInit(values, extractValues(input), typeof input !== "string"); // allows string or URL object.
+      if (typeof input === "object") {
+        values = applyInit(values, input, false);
+      } else {
+        values = applyInit(values, extractValues(input), false); // allows string or URL object.
+      }
     } catch {
       return false;
     }
 
-    for (let part in this.pattern) {
-      //if (!this.regexp[part]) {
-      //  continue;
-      //}
-      // @ts-ignore
-      let result = this.regexp[part].test(values[part]);
-      // @ts-ignore
-      //console.log(part, this.regexp[part], values[part], result);
-      if (!result) {
+    for (let component in this.pattern) {
+      if (!values[component]) {
+        if (component === "pathname" && this.pattern[component] === DEFAULT_PATHNAME_PATTERN)
+          continue;
+
+        if (component !== "pathname" && this.pattern[component] === DEFAULT_PATTERN)
+          continue;
+      }
+
+      let match;
+      let portMatchFix = component == "port" && values.protocol && values.port === defaultPortForProtocol(values.protocol)
+      if (portMatchFix) {
+        // @ts-ignore
+        match = this.regexp[component].exec('');
+      } else {
+        // @ts-ignore
+        match = this.regexp[component].exec(values[component] || '');
+      }
+
+      if (!match) {
         return false;
       }
     }
@@ -439,7 +449,7 @@ export class URLPattern {
     return true;
   }
 
-  exec(input: string | URLPatternInit): URLPatternComponentResult | null | undefined | number {
+  exec(input: string | URLPatternInit): URLPatternComponentResult | null | undefined  {
     let values: URLPatternValues = {};
 
     if (typeof input === "undefined") {
