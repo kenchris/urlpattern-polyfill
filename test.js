@@ -81,7 +81,7 @@ let data = JSON.parse(rawdata);
 
 let i = 0;
 for (let { pattern, input, expected } of data) {
-  //i++; if (i !== 105) { continue; }
+  //if (i++ !== 110) { continue; }
 
   test(`Test data ${i++}: ${JSON.stringify(pattern)} matching ${JSON.stringify(input)}`, t => {
     const urlPattern = new URLPattern(pattern);

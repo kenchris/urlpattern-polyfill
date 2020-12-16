@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "es2015",
-    "lib": ["es2017", "dom"],
+    "target": "es2020",
+    "module": "es2020",
+    "lib": ["esnext", "dom"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

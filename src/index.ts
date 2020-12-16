@@ -4,8 +4,13 @@ import {
   ParseOptions
 } from "./path-to-regex-6.2";
 
-const expandStar = (str: string): string => {
-  return str; //.replace(/(?<!\(\.)\*/gi, "(.*)");
+if (!String.prototype.replaceAll) {
+	String.prototype.replaceAll = function(searchValue: string | RegExp, replaceValue: any): string {
+		if (Object.prototype.toString.call(searchValue).toLowerCase() === '[object regexp]') {
+			return this.replace(searchValue, replaceValue);
+		}
+		return this.replace(new RegExp(searchValue, 'g'), replaceValue);
+	};
 }
 
 // The default wildcard pattern used for a component when the constructor
@@ -112,7 +117,114 @@ interface URLPatternComponentResult {
   [key:string]: { input: any, groups: any } | any;
 }
 
-function extractValues(url: string) {
+// Utility function to determine if a pathname is absolute or not.  For
+// URL values this mainly consists of a check for a leading slash.  For
+// patterns we do some additional checking for escaped or grouped slashes.
+function isAbsolutePathname(pathname: string, isPattern: boolean): boolean {
+  if (!pathname.length) {
+    return false;
+  }
+
+  if (pathname[0] === '/') {
+    return true;
+  }
+
+  if (!isPattern) {
+    return false;
+  }
+
+  if (pathname.length < 2) {
+    return false;
+  }
+
+  // Patterns treat escaped slashes and slashes within an explicit grouping as
+  // valid leading slashes.  For example, "\/foo" or "{/foo}".  Patterns do
+  // not consider slashes within a custom regexp group as valid for the leading
+  // pathname slash for now.  To support that we would need to be able to
+  // detect things like ":name_123(/foo)" as a valid leading group in a pattern,
+  // but that is considered too complex for now.
+  if ((pathname[0] == '\\' || pathname[0] == '{') && pathname[1] == '/') {
+    return true;
+  }
+
+  return false;
+}
+
+function isASCII(str: string, extended: boolean) {
+  return (extended ? /^[\x00-\xFF]*$/ : /^[\x00-\x7F]*$/).test(str);
+}
+
+function validatePatternEncoding(pattern: string, component: string) {
+  if (!pattern.length) return pattern;
+  if (isASCII(pattern, true)) return pattern; // ASCII only 
+
+  // TODO: Consider if we should canonicalize patterns instead.  See:
+  //       https://github.com/WICG/urlpattern/issues/33
+  throw new TypeError(`Illegal character in '${component}' pattern '${pattern}'. `
+    + "Patterns must be URL encoded ASCII.");
+}
+
+function canonicalizeHash(hash: string, isPattern: boolean) {
+  if (isPattern) {
+    return validatePatternEncoding(hash, "hash");
+  }
+  const url = new URL("https://example.com");
+  url.hash = hash;
+  // NOTE: Node URL handling is buggy!
+  return url.hash ? url.hash.substring(1, url.hash.length).replace("|", "%7C") : '';
+}
+
+function canonicalizeSearch(search: string, isPattern: boolean) {
+  if (isPattern) {
+    return validatePatternEncoding(search, "search");
+  }
+  const url = new URL("https://example.com");
+  url.search = search;
+  // NOTE: Node URL handling is buggy!
+  return url.search ? url.search.substring(1, url.search.length).replace("|", "%7C") : '';
+}
+
+function canonicalizeHostname(hostname: string, isPattern: boolean) {
+  if (isPattern) {
+    return validatePatternEncoding(hostname, "hostname");
+  }
+  const url = new URL("https://example.com");
+  url.hostname = hostname;
+  // NOTE: Node URL handling is buggy!
+  return url.hostname.replace("|", "%7C");
+}
+
+function canonicalizePassword(password: string, isPattern: boolean) {
+  if (isPattern) {
+    return validatePatternEncoding(password, "password");
+  }
+  const url = new URL("https://example.com");
+  url.password = password;
+  // NOTE: Node URL handling is buggy!
+  return url.password.replace("|", "%7C");
+}
+
+function canonicalizeUsername(username: string, isPattern: boolean) {
+  if (isPattern) {
+    return validatePatternEncoding(username, "username");
+  }
+  const url = new URL("https://example.com");
+  url.username = username;
+  // NOTE: Node URL handling is buggy!
+  return url.username.replace("|", "%7C");
+}
+
+function canonicalizePathname(pathname: string, isPattern: boolean) {
+  if (isPattern) {
+    return validatePatternEncoding(pathname, "pathname");
+  }
+  const url = new URL("https://example.com");
+  url.pathname = pathname;
+  // NOTE: Node URL handling is buggy!
+  return url.pathname.replace("|", "%7C");
+}
+
+function extractValues(url: string): URLPatternInit {
   const o = new URL(url); // May throw.
   return {
     protocol: o.protocol.substring(0, o.protocol.length - 1), // not optional
@@ -129,16 +241,7 @@ function extractValues(url: string) {
 // A utility method that takes a URLPatternInit, splits it apart, and applies
 // the individual component values in the given set of strings.  The strings
 // are only applied if a value is present in the init structure.
-function applyInit(init: URLPatternInit): URLPatternValues {
-  let pathname = DEFAULT_PATHNAME_PATTERN;
-  let protocol = DEFAULT_PATTERN;
-  let username = DEFAULT_PATTERN;
-  let password = DEFAULT_PATTERN;
-  let hostname = DEFAULT_PATTERN;
-  let port = DEFAULT_PATTERN;
-  let search = DEFAULT_PATTERN;
-  let hash = DEFAULT_PATTERN;
-
+function applyInit(o: URLPatternValues, init: URLPatternInit, isPattern: boolean): URLPatternValues {
   // If there is a baseURL we need to apply its component values first.  The
   // rest of the URLPatternInit structure will then later override these
   // values.  Note, the baseURL will always set either an empty string or
@@ -149,12 +252,12 @@ function applyInit(init: URLPatternInit): URLPatternValues {
   if (init.baseURL) {
     try {
       baseURL = new URL(init.baseURL);
-      protocol = baseURL.protocol ? baseURL.protocol.substring(0, baseURL.protocol.length - 1) : "";
-      username = baseURL.username ? baseURL.username : "";
-      password = baseURL.password ? baseURL.password : "";
-      hostname = baseURL.hostname ? baseURL.hostname : "";
-      port = baseURL.port ? baseURL.port : "";
-      pathname = baseURL.pathname ? baseURL.pathname : "/";
+      o.protocol = baseURL.protocol ? baseURL.protocol.substring(0, baseURL.protocol.length - 1) : "";
+      o.username = baseURL.username ? baseURL.username : "";
+      o.password = baseURL.password ? baseURL.password : "";
+      o.hostname = baseURL.hostname ? baseURL.hostname : "";
+      o.port = baseURL.port ? baseURL.port : "";
+      o.pathname = baseURL.pathname ? baseURL.pathname : "/";
       // Do no propagate search or hash from the base URL.  This matches the
       // behavior when resolving a relative URL against a base URL.
     } catch {
@@ -164,47 +267,30 @@ function applyInit(init: URLPatternInit): URLPatternValues {
 
   // Apply the URLPatternInit component values on top of the default and
   // baseURL values.
-  if (init.protocol) protocol = init.protocol;
-  if (init.username) username = init.username;
-  if (init.password) password = init.password;
-  if (init.hostname) hostname = init.hostname;
-  if (init.port) port = init.port;
-  if (init.pathname) {
-    pathname = init.pathname;
-    if (init.baseURL) {
-      pathname = new URL(pathname, init.baseURL).pathname;
-    }
-    // TODO: Compare with updates when it handles relative pathnames
-    // If the baseURL is missing and the pathname is relative then an exception is thrown
-    /*
-    let isRelativePath = !["/", "(", ":"].includes(pathname[0]);
-    if (isRelativePath) {
-      if (!init.baseURL) {
-        throw new TypeError('Missing baseURL');
-      } else {
-        // Resolve against baseURL. E.g. if the pattern is "*hello" and the base URL is
-        // "https://example.com/foo/bar", then the final path pattern is "/foo/*hello".
-        pathname = new URL(init.baseURL, pathname).pathname;
-      }
-      if (!pathname.length || pathname[0] != '/') {
-        throw new TypeError(`Could not resolve absolute pathname for '${pathname}'.`);
-      }
-    }
-    */
-  }
-  if (init.search) search = init.search;
-  if (init.hash) hash = init.hash;
+  if (init.protocol) o.protocol = init.protocol;
+  if (init.username) o.username = canonicalizeUsername(init.username, isPattern);
+  if (init.password) o.password = canonicalizePassword(init.password, isPattern);
+  if (init.hostname) o.hostname = canonicalizeHostname(init.hostname, isPattern);
+  if (init.port) o.port = init.port;
 
-  return {
-    pathname,
-    protocol,
-    username,
-    password,
-    hostname,
-    port,
-    search,
-    hash
+  if (init.pathname) {
+    o.pathname = init.pathname;
+    if (baseURL && !isAbsolutePathname(o.pathname, isPattern)) { // FIXME: is hierarchical
+      // Find the last slash in the baseURL pathname.  Since the URL is
+      // hierarchical it should have a slash to be valid, but we are cautious
+      // and check.  If there is no slash then we cannot use resolve the
+      // relative pathname and just treat the init pathname as an absolute
+      // value.
+
+      o.pathname = new URL(o.pathname, init.baseURL).pathname;
+    }
+    o.pathname = canonicalizePathname(o.pathname, isPattern);
   }
+  if (init.search) o.search = canonicalizeSearch(init.search, isPattern);
+  if (init.hash) o.hash = canonicalizeHash(init.hash, isPattern);
+
+  console.log("final pathname", o.pathname);
+  return o;
 }
 
 export class URLPattern {
@@ -234,12 +320,23 @@ export class URLPattern {
       throw new TypeError('Incorrect params passed');
     }
 
-    this.pattern = applyInit(init);
+    const defaults = {
+      pathname: DEFAULT_PATHNAME_PATTERN,
+      protocol: DEFAULT_PATTERN,
+      username: DEFAULT_PATTERN,
+      password: DEFAULT_PATTERN,
+      hostname: DEFAULT_PATTERN,
+      port: DEFAULT_PATTERN,
+      search: DEFAULT_PATTERN,
+      hash: DEFAULT_PATTERN
+    }
+
+    this.pattern = applyInit(defaults, init, true);
 
     for (let component in this.pattern) {
       let options;
-      let defaultPattern = DEFAULT_PATTERN;
-      const pattern = expandStar(this.pattern[component]);
+      //let defaultPattern = DEFAULT_PATTERN;
+      const pattern = this.pattern[component];
       this.keys[component] = [];
       switch(component) {
         case "hostname":
@@ -247,16 +344,18 @@ export class URLPattern {
           break;
         case "pathname":
           options = PATHNAME_OPTIONS;
-          defaultPattern = DEFAULT_PATHNAME_PATTERN;
+          //defaultPattern = DEFAULT_PATHNAME_PATTERN;
           break;
         default:
           options = DEFAULT_OPTIONS;
       }
-      if (pattern === defaultPattern) {
-        continue;
-      }
+      //if (pattern === defaultPattern) {
+      //  console.log("skipping", component);
+      //  continue;
+      //}
       try {
         this.regexp[component] = pathToRegexp(pattern, this.keys[component], options);
+        console.log(component, this.pattern[component], this.regexp[component]);
       } catch {
         // If a pattern is illegal the constructor will throw an exception
         throw new TypeError(`Invalid ${component} pattern '${this.pattern[component]}'.`);
@@ -264,18 +363,28 @@ export class URLPattern {
     }
   }
 
-  test(url: string) {
-    let values: URLPatternValues;
+  test(input: string) {
+    let values: URLPatternValues = {
+      pathname: '',
+      protocol: '',
+      username: '',
+      password: '',
+      hostname: '',
+      port: '',
+      search: '',
+      hash: ''
+    }
+
     try {
-      values = extractValues(url); // allows string or URL object.
+      values = applyInit(values, extractValues(input), typeof input !== "string"); // allows string or URL object.
     } catch {
       return false;
     }
 
     for (let part in this.pattern) {
-      if (!this.regexp[part]) {
-        continue;
-      }
+      //if (!this.regexp[part]) {
+      //  continue;
+      //}
       // @ts-ignore
       let result = this.regexp[part].test(values[part]);
       // @ts-ignore
@@ -289,31 +398,58 @@ export class URLPattern {
   }
 
   exec(input: string | URLPatternInit): URLPatternComponentResult | null | undefined | number {
-    let values: URLPatternValues;
+    let values: URLPatternValues = {
+      pathname: '',
+      protocol: '',
+      username: '',
+      password: '',
+      hostname: '',
+      port: '',
+      search: '',
+      hash: ''
+    }
+
     if (typeof input === "undefined") {
       return;
     }
 
     if (typeof input === "object") {
-      values = applyInit(input);
-      values.pathname = new URL(values.pathname, input.baseURL || "https://example.com").pathname;
+      values = applyInit(values, input, typeof input !== "string");
     } else {
       try {
-        values = extractValues(input); // allows string or URL object.
+        values = applyInit(values, extractValues(input), typeof input !== "string"); // allows string or URL object.
+        if (values.pathname) {
+          const leadingSlash = values.pathname[0] == "/";
+          values.pathname = new URL(values.pathname, "https://example.com").pathname;
+          if (!leadingSlash) {
+            values.pathname = values.pathname.substring(1, values.pathname.length);
+          }
+        }
+        if (values.hostname) {
+          new URL("https://" + values.hostname);
+        }
       } catch {
         return null;
       }
     }
 
+    console.log("values", values);
+
     let result: URLPatternComponentResult | null = null;
     for (let component in this.pattern) {
-      if (!this.regexp[component]) {
+      console.log("component/pattern/value", component, this.pattern[component], values[component]);
+      if (component === "pathname" && values[component] === '' && this.pattern[component] === DEFAULT_PATHNAME_PATTERN)
         continue;
-      }
+
+      if (component !== "pathname" && values[component] === '' && this.pattern[component] === DEFAULT_PATTERN)
+        continue;
+
+      const encoded = encodeURIComponent(decodeURIComponent(values[component]))
+        .replaceAll('%3D', '=').replaceAll('%2F', '/');
 
       // @ts-ignore
-      const match = this.regexp[component].exec(values[component]);
-      console.log(this.regexp[component], values[component], match);
+      const match = this.regexp[component].exec(encoded);
+      console.log("regex, value, match", this.regexp[component], encoded, match);
 
       let groups = {} as Array<string>;
       if (!match) {
