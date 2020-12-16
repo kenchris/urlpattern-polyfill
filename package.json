@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "rimraf dist/ && tsc",
-    "test": "ava"
+    "test": "ava --fail-fast -s"
   },
   "ava": {
     "require": [

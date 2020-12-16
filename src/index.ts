@@ -245,7 +245,6 @@ function defaultPortForProtocol(protocol: string): string {
 }
 
 function canonicalizePort(port: string, isPattern: boolean): string {
-  console.log("input", port, isPattern )
   if (isPattern) {
     return validatePatternEncoding(port, "port");
   }
@@ -358,7 +357,7 @@ export class URLPattern {
         if (typeof args[1] === "string") {
           init.baseURL = args[1];
         } else {
-          throw TypeError;
+          throw new TypeError();
         }
       }
     }
@@ -397,7 +396,6 @@ export class URLPattern {
       try {
         // @ts-ignore
         this.regexp[component] = pathToRegexp(pattern, this.keys[component], options);
-        console.log(component, this.pattern[component], this.regexp[component]);
       } catch {
         // If a pattern is illegal the constructor will throw an exception
         throw new TypeError(`Invalid ${component} pattern '${this.pattern[component]}'.`);
@@ -409,7 +407,7 @@ export class URLPattern {
     let values: URLPatternValues = {};
 
     if (typeof input === "undefined") {
-      return;
+      return false;
     }
 
     try {
@@ -423,22 +421,15 @@ export class URLPattern {
     }
 
     for (let component in this.pattern) {
-      if (!values[component]) {
-        if (component === "pathname" && this.pattern[component] === DEFAULT_PATHNAME_PATTERN)
-          continue;
-
-        if (component !== "pathname" && this.pattern[component] === DEFAULT_PATTERN)
-          continue;
-      }
-
       let match;
       let portMatchFix = component == "port" && values.protocol && values.port === defaultPortForProtocol(values.protocol)
       if (portMatchFix) {
         // @ts-ignore
         match = this.regexp[component].exec('');
       } else {
+        const fallback = component == "pathname"? '/' : '';
         // @ts-ignore
-        match = this.regexp[component].exec(values[component] || '');
+        match = this.regexp[component].exec(values[component] || fallback);
       }
 
       if (!match) {
@@ -466,30 +457,18 @@ export class URLPattern {
       return null;
     }
 
-    console.log("values", values);
-
     let result: URLPatternComponentResult | null = null;
     for (let component in this.pattern) {
-      //console.log("component/pattern/value", component, this.pattern[component], values[component]);
-      if (!values[component]) {
-        if (component === "pathname" && this.pattern[component] === DEFAULT_PATHNAME_PATTERN)
-          continue;
-
-        if (component !== "pathname" && this.pattern[component] === DEFAULT_PATTERN)
-          continue;
-      }
-
       let match;
       let portMatchFix = component == "port" && values.protocol && values.port === defaultPortForProtocol(values.protocol)
       if (portMatchFix) {
         // @ts-ignore
         match = this.regexp[component].exec('');
       } else {
+        const fallback = component == "pathname"? '/' : '';
         // @ts-ignore
-        match = this.regexp[component].exec(values[component] || '');
+        match = this.regexp[component].exec(values[component] || fallback);
       }
-
-      //console.log("regex, value, match", component, this.regexp[component], values[component], match);
 
       let groups = {} as Array<string>;
       if (!match) {
@@ -505,17 +484,10 @@ export class URLPattern {
 
       if (!result) result = {};
 
-      if (!Object.keys(groups).length && !match.input.length) {
-        if (!result["exactly_empty_components"]) {
-          result["exactly_empty_components"] = [];
-        }
-        result["exactly_empty_components"].push(component);
-      } else {
-        result[component] = {
-          input: match.input,
-          groups
-        };
-      }
+      result[component] = {
+        input: values[component] || '',
+        groups
+      };
 
       result.input = input;
     }
