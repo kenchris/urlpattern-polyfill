@@ -101,15 +101,15 @@ interface URLPatternInit {
 }
 
 interface URLPatternValues {
-  [key: string]: string;
-  pathname: string;
-  protocol: string;
-  username: string;
-  password: string;
-  hostname: string;
-  port: string;
-  search: string;
-  hash: string;
+  [key: string]: string | undefined;
+  pathname?: string;
+  protocol?: string;
+  username?: string;
+  password?: string;
+  hostname?: string;
+  port?: string;
+  search?: string;
+  hash?: string;
 }
 
 interface URLPatternComponentResult {
@@ -156,7 +156,7 @@ function isASCII(str: string, extended: boolean) {
 
 function validatePatternEncoding(pattern: string, component: string) {
   if (!pattern.length) return pattern;
-  if (isASCII(pattern, true)) return pattern; // ASCII only 
+  if (isASCII(pattern, true)) return pattern; // ASCII only
 
   // TODO: Consider if we should canonicalize patterns instead.  See:
   //       https://github.com/WICG/urlpattern/issues/33
@@ -218,10 +218,52 @@ function canonicalizePathname(pathname: string, isPattern: boolean) {
   if (isPattern) {
     return validatePatternEncoding(pathname, "pathname");
   }
-  const url = new URL("https://example.com");
-  url.pathname = pathname;
+
+  const leadingSlash = pathname[0] == "/";
+  pathname = new URL(pathname, "https://example.com").pathname;
+  if (!leadingSlash) {
+    pathname = pathname.substring(1, pathname.length);
+  }
+
   // NOTE: Node URL handling is buggy!
-  return url.pathname.replace("|", "%7C");
+  return pathname.replace("|", "%7C");
+}
+
+function defaultPortForProtocol(protocol: string): string {
+  switch(protocol) {
+    case "ws":
+    case "http":
+      return '80';
+    case "wws":
+    case "https":
+      return '443';
+    case "ftp":
+      return '21';
+    default:
+      return '';
+  }
+}
+
+function canonicalizePort(port: string, isPattern: boolean): string {
+  console.log("input", port, isPattern )
+  if (isPattern) {
+    return validatePatternEncoding(port, "port");
+  }
+  // Since ports only consist of digits there should be no encoding needed.
+  // Therefore we directly use the UTF8 encoding version of CanonicalizePort().
+  if (/^[0-9]*$/.test(port) && parseInt(port) <= 65535) {
+    return port;
+  }
+  throw new TypeError(`Invalid port '${port}'.`);
+}
+
+function canonicalizeProtocol(protocol: string, isPattern: boolean) {
+  if (isPattern) {
+    return validatePatternEncoding(protocol, "protocol");
+  }
+
+  if (/^[-+.A-Za-z0-9]*$/.test(protocol)) return protocol.toLowerCase();
+  throw new TypeError(`Invalid protocol '${protocol}'.`);
 }
 
 function extractValues(url: string): URLPatternInit {
@@ -267,11 +309,11 @@ function applyInit(o: URLPatternValues, init: URLPatternInit, isPattern: boolean
 
   // Apply the URLPatternInit component values on top of the default and
   // baseURL values.
-  if (init.protocol) o.protocol = init.protocol;
+  if (init.protocol) o.protocol = canonicalizeProtocol(init.protocol, isPattern);
   if (init.username) o.username = canonicalizeUsername(init.username, isPattern);
   if (init.password) o.password = canonicalizePassword(init.password, isPattern);
   if (init.hostname) o.hostname = canonicalizeHostname(init.hostname, isPattern);
-  if (init.port) o.port = init.port;
+  if (init.port) o.port = canonicalizePort(init.port, isPattern);
 
   if (init.pathname) {
     o.pathname = init.pathname;
@@ -281,15 +323,20 @@ function applyInit(o: URLPatternValues, init: URLPatternInit, isPattern: boolean
       // and check.  If there is no slash then we cannot use resolve the
       // relative pathname and just treat the init pathname as an absolute
       // value.
+      const slashIndex = baseURL.pathname.lastIndexOf("/");
+      if (slashIndex >= 0) {
+        // Extract the baseURL path up to and including the first slash.  Append
+        // the relative init pathname to it.
+        o.pathname = baseURL.pathname.substring(0, slashIndex + 1) + o.pathname;
+      }
 
-      o.pathname = new URL(o.pathname, init.baseURL).pathname;
+      //o.pathname = new URL(o.pathname, init.baseURL).pathname;
     }
     o.pathname = canonicalizePathname(o.pathname, isPattern);
   }
   if (init.search) o.search = canonicalizeSearch(init.search, isPattern);
   if (init.hash) o.hash = canonicalizeHash(init.hash, isPattern);
 
-  console.log("final pathname", o.pathname);
   return o;
 }
 
@@ -335,7 +382,6 @@ export class URLPattern {
 
     for (let component in this.pattern) {
       let options;
-      //let defaultPattern = DEFAULT_PATTERN;
       const pattern = this.pattern[component];
       this.keys[component] = [];
       switch(component) {
@@ -344,16 +390,12 @@ export class URLPattern {
           break;
         case "pathname":
           options = PATHNAME_OPTIONS;
-          //defaultPattern = DEFAULT_PATHNAME_PATTERN;
           break;
         default:
           options = DEFAULT_OPTIONS;
       }
-      //if (pattern === defaultPattern) {
-      //  console.log("skipping", component);
-      //  continue;
-      //}
       try {
+        // @ts-ignore
         this.regexp[component] = pathToRegexp(pattern, this.keys[component], options);
         console.log(component, this.pattern[component], this.regexp[component]);
       } catch {
@@ -373,7 +415,7 @@ export class URLPattern {
       port: '',
       search: '',
       hash: ''
-    }
+    };
 
     try {
       values = applyInit(values, extractValues(input), typeof input !== "string"); // allows string or URL object.
@@ -407,7 +449,7 @@ export class URLPattern {
       port: '',
       search: '',
       hash: ''
-    }
+    };
 
     if (typeof input === "undefined") {
       return;
@@ -415,19 +457,12 @@ export class URLPattern {
 
     try {
       if (typeof input === "object") {
-        values = applyInit(values, input, typeof input !== "string");
+        values = applyInit(values, input, false);
       } else {
-        values = applyInit(values, extractValues(input), typeof input !== "string"); // allows string or URL object.
-      } 
-      if (values.pathname) {
-        const leadingSlash = values.pathname[0] == "/";
-        values.pathname = new URL(values.pathname, "https://example.com").pathname;
-        if (!leadingSlash) {
-          values.pathname = values.pathname.substring(1, values.pathname.length);
-        }
+        values = applyInit(values, extractValues(input), false); // allows string or URL object.
       }
-      if (values.hostname) {
-        new URL("https://" + values.hostname);
+      if (values.protocol && values.port === defaultPortForProtocol(values.protocol)) {
+        values.port = '';
       }
     } catch {
       return null;
@@ -438,18 +473,19 @@ export class URLPattern {
     let result: URLPatternComponentResult | null = null;
     for (let component in this.pattern) {
       console.log("component/pattern/value", component, this.pattern[component], values[component]);
-      if (component === "pathname" && values[component] === '' && this.pattern[component] === DEFAULT_PATHNAME_PATTERN)
+      if (component === "pathname" && values[component] == '' && this.pattern[component] === DEFAULT_PATHNAME_PATTERN)
         continue;
 
-      if (component !== "pathname" && values[component] === '' && this.pattern[component] === DEFAULT_PATTERN)
+      if (component !== "pathname" && values[component] == '' && this.pattern[component] === DEFAULT_PATTERN)
         continue;
 
+      // @ts-ignore
       const encoded = encodeURIComponent(decodeURIComponent(values[component]))
         .replaceAll('%3D', '=').replaceAll('%2F', '/');
 
       // @ts-ignore
       const match = this.regexp[component].exec(encoded);
-      console.log("regex, value, match", this.regexp[component], encoded, match);
+      console.log("regex, value, match", component, this.regexp[component], encoded, match);
 
       let groups = {} as Array<string>;
       if (!match) {
