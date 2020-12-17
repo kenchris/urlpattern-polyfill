@@ -10,6 +10,7 @@ export interface URLPatternInit {
   search?: string;
   hash?: string;
 }
+
 export interface URLPatternValues {
   [key: string]: string | undefined;
   pathname?: string;
@@ -21,6 +22,7 @@ export interface URLPatternValues {
   search?: string;
   hash?: string;
 }
+
 export interface URLPatternComponentResult {
   input?: any;
   [key: string]: { input: any; groups: any; } | any;
