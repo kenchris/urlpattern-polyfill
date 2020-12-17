@@ -1,4 +1,5 @@
-import {ParseOptions, pathToRegexp, TokensToRegexpOptions} from './path-to-regex-6.2';
+import { ParseOptions, pathToRegexp, TokensToRegexpOptions } from './path-to-regex-6.2';
+import { URLPatternComponentResult, URLPatternInit, URLPatternValues } from './url-pattern.interfaces';
 import {
   canonicalizeHash,
   canonicalizeHostname,
@@ -9,10 +10,8 @@ import {
   canonicalizeSearch,
   canonicalizeUsername,
   defaultPortForProtocol,
-  extractValues,
-  isAbsolutePathname,
-} from './url-pattern-utils';
-import {URLPatternComponentResult, URLPatternInit, URLPatternValues} from './url-pattern.interfaces';
+  isAbsolutePathname
+} from './url-utils';
 
 // The default wildcard pattern used for a component when the constructor
 // input does not provide an explicit value.
@@ -90,6 +89,20 @@ export function parseShorthand(str: string) {
   }
 
   return {protocol, hostname, pathname, search, hash};
+}
+
+function extractValues(url: string): URLPatternInit {
+  const o = new URL(url); // May throw.
+  return {
+    protocol: o.protocol.substring(0, o.protocol.length - 1),
+    username: o.username,
+    password: o.password,
+    hostname: o.hostname,
+    port: o.port,
+    pathname: o.pathname,
+    search: o.search != "" ? o.search.substring(1, o.search.length) : undefined,
+    hash: o.hash != "" ? o.hash.substring(1, o.hash.length) : undefined
+  };
 }
 
 // A utility method that takes a URLPatternInit, splits it apart, and applies

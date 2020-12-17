@@ -1,4 +1,3 @@
-import { URLPatternInit } from "./url-pattern.interfaces";
 
 // Utility function to determine if a pathname is absolute or not.  For
 // URL values this mainly consists of a check for a leading slash.  For
@@ -141,16 +140,4 @@ export function canonicalizeProtocol(protocol: string, isPattern: boolean) {
     return protocol.toLowerCase();
   throw new TypeError(`Invalid protocol '${protocol}'.`);
 }
-export function extractValues(url: string): URLPatternInit {
-  const o = new URL(url); // May throw.
-  return {
-    protocol: o.protocol.substring(0, o.protocol.length - 1),
-    username: o.username,
-    password: o.password,
-    hostname: o.hostname,
-    port: o.port,
-    pathname: o.pathname,
-    search: o.search != "" ? o.search.substring(1, o.search.length) : undefined,
-    hash: o.hash != "" ? o.hash.substring(1, o.hash.length) : undefined
-  };
-}
+
