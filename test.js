@@ -81,71 +81,66 @@ let data = JSON.parse(rawdata);
 let i = 0;
 
 for (let entry of data) {
-  test(`Test data ${i++}: Pattern: ${JSON.stringify(entry.pattern)} Input: ${JSON.stringify(entry.input)}`, t => {
-    //if (entry.error) {
-    //  t.throws(_ => new URLPattern(entry.pattern), {instanceOf: TypeError});
-    //  return;
-    //}
+  if (entry.error) {
+    test(`Test data ${i++}: Pattern: ${JSON.stringify(entry.pattern)} should throw`, t => {
+      /** throw test here. */
+      t.throws(_ => new URLPattern(entry.pattern), {instanceOf: TypeError});
+    });
+  } else {
+    test(`Test data ${i++}: Pattern: ${JSON.stringify(entry.pattern)} Input: ${JSON.stringify(entry.input)}`, t => {
+      //if (entry.error) {
+      //  t.throws(_ => new URLPattern(entry.pattern), {instanceOf: TypeError});
+      //  return;
+      //}
 
-    const pattern = new URLPattern(entry.pattern);
+      const pattern = new URLPattern(entry.pattern);
 
-    // First, validate the test() method by converting the expected result to
-    // a truthy value.
-    t.is(pattern.test(entry.input), !!entry.expected, 'test() result');
+      // First, validate the test() method by converting the expected result to
+      // a truthy value.
+      t.is(pattern.test(entry.input), !!entry.expected, 'test() result');
 
-    // Next, start validating the exec() method.
-    const result = pattern.exec(entry.input);
+      // Next, start validating the exec() method.
+      const result = pattern.exec(entry.input);
 
-    // On a failed match exec() returns null.
-    if (!entry.expected) {
-      t.is(result, entry.expected, 'exec() failed match result');
-      return;
-    }
-
-    // Next verify the result.input is correct.  This may be a structured
-    // URLPatternInit dictionary object or a URL string.
-    if (typeof entry.expected.input === 'object') {
-      t.deepEqual(result.input, entry.expected.input,
-                            'exec() result.input');
-    } else {
-      t.is(result.input, entry.expected.input,
-                    'exec() result.input');
-    }
-
-    // Next we will compare the URLPatternComponentResult for each of these
-    // expected components.
-    const component_list = [
-      'protocol',
-      'username',
-      'password',
-      'hostname',
-      'password',
-      'pathname',
-      'search',
-      'hash',
-    ];
-
-    for (let component of component_list) {
-      let expected_obj = entry.expected[component];
-
-      // If the test expectations don't include a component object, then
-      // we auto-generate one.  This is convenient for the many cases
-      // where the pattern has a default wildcard or empty string pattern
-      // for a component and the input is essentially empty.
-      if (!expected_obj) {
-        expected_obj = { input: '', groups: {} };
-
-        // Next, we must treat default wildcards differently than empty string
-        // patterns.  The wildcard results in a capture group, but the empty
-        // string pattern does not.  The expectation object must list which
-        // components should be empty instead of wildcards in
-        // |exactly_empty_components|.
-        if (!entry.expected.exactly_empty_components ||
-            !entry.expected.exactly_empty_components.includes(component)) {
-          expected_obj.groups['0'] = '';
-        }
+      // On a failed match exec() returns null.
+      if (!entry.expected) {
+        t.is(result, entry.expected, 'exec() failed match result');
+        return;
       }
-      t.deepEqual(result[component], expected_obj, `exec() result for ${component}`);
-    }
-  });
+
+      // Next verify the result.input is correct.  This may be a structured
+      // URLPatternInit dictionary object or a URL string.
+      if (typeof entry.expected.input === 'object') {
+        t.deepEqual(result.input, entry.expected.input, 'exec() result.input');
+      } else {
+        t.is(result.input, entry.expected.input, 'exec() result.input');
+      }
+
+      // Next we will compare the URLPatternComponentResult for each of these
+      // expected components.
+      const component_list = ['protocol', 'username', 'password', 'hostname', 'password', 'pathname', 'search', 'hash'];
+
+      for (let component of component_list) {
+        let expected_obj = entry.expected[component];
+
+        // If the test expectations don't include a component object, then
+        // we auto-generate one.  This is convenient for the many cases
+        // where the pattern has a default wildcard or empty string pattern
+        // for a component and the input is essentially empty.
+        if (!expected_obj) {
+          expected_obj = {input: '', groups: {}};
+
+          // Next, we must treat default wildcards differently than empty string
+          // patterns.  The wildcard results in a capture group, but the empty
+          // string pattern does not.  The expectation object must list which
+          // components should be empty instead of wildcards in
+          // |exactly_empty_components|.
+          if (!entry.expected.exactly_empty_components || !entry.expected.exactly_empty_components.includes(component)) {
+            expected_obj.groups['0'] = '';
+          }
+        }
+        t.deepEqual(result[component], expected_obj, `exec() result for ${component}`);
+      }
+    });
+  }
 }
