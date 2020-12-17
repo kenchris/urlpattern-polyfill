@@ -123,18 +123,6 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
   return o;
 }
 
-function checkPatternInit(p: URLPatternInit) {
-  return Object.entries(p).every(([prop, val]) => {
-    if (!['baseURL', 'username', 'password', 'protocol', 'hostname', 'port', 'pathname', 'search', 'hash'].includes(prop)) {
-      throw new TypeError(`Unknown property "${prop}"`);
-    }
-    if (typeof val !== 'string') {
-      throw new TypeError(`Property "${prop}" isn't a string`);
-    }
-    return true;
-  });
-}
-
 export class URLPattern {
   private pattern: URLPatternInit;
   private regexp: any = {};
@@ -153,10 +141,18 @@ export class URLPattern {
       }
     }
     // no or invalid arguments
-    if (!init || typeof init !== 'object' ) {
+    if (!init || typeof init !== 'object') {
       throw new TypeError('Incorrect params passed');
     }
-    checkPatternInit(init)
+    /** check all properties */
+    Object.entries(init).forEach(([prop, val]) => {
+      if (!['baseURL', 'username', 'password', 'protocol', 'hostname', 'port', 'pathname', 'search', 'hash'].includes(prop)) {
+        throw new TypeError(`Unknown property "${prop}"`);
+      }
+      if (typeof val !== 'string') {
+        throw new TypeError(`Property "${prop}" isn't a string`);
+      }
+    });
 
     const defaults = {
       pathname: DEFAULT_PATHNAME_PATTERN,
