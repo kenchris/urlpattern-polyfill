@@ -1,6 +1,6 @@
 import test from 'ava';
 import {readFileSync} from 'fs';
-import {URLPattern, parseShorthand} from './dist/index.js';
+import {URLPattern} from './dist/index.js';
 
 const baseURL = 'https://example.com';
 /*

@@ -141,8 +141,8 @@ export class URLPattern {
         }
       }
     }
-    // invalid arguments
-    if (typeof init !== 'object') {
+    // no or invalid arguments
+    if (!init || typeof init !== 'object') {
       throw new TypeError('Incorrect params passed');
     }
 
@@ -174,8 +174,7 @@ export class URLPattern {
           options = DEFAULT_OPTIONS;
       }
       try {
-        // @ts-ignore
-        this.regexp[component] = pathToRegexp(pattern, this.keys[component], options);
+        this.regexp[component] = pathToRegexp(pattern as string, this.keys[component], options);
       } catch {
         // If a pattern is illegal the constructor will throw an exception
         throw new TypeError(`Invalid ${component} pattern '${this.pattern[component]}'.`);
@@ -199,16 +198,14 @@ export class URLPattern {
     } catch {
       return false;
     }
-
-    for (let component in this.pattern) {
+    let component:URLPatternKeys
+    for (component in this.pattern) {
       let match;
       let portMatchFix = component == 'port' && values.protocol && values.port === defaultPortForProtocol(values.protocol);
       if (portMatchFix) {
-        // @ts-ignore
         match = this.regexp[component].exec('');
       } else {
         const fallback = component == 'pathname' ? '/' : '';
-        // @ts-ignore
         match = this.regexp[component].exec(values[component] || fallback);
       }
 
@@ -243,11 +240,9 @@ export class URLPattern {
       let match;
       let portMatchFix = component == 'port' && values.protocol && values.port === defaultPortForProtocol(values.protocol);
       if (portMatchFix) {
-        // @ts-ignore
         match = this.regexp[component].exec('');
       } else {
         const fallback = component == 'pathname' ? '/' : '';
-        // @ts-ignore
         match = this.regexp[component].exec(values[component] || fallback);
       }
 
