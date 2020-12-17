@@ -1,4 +1,3 @@
-
 // Utility function to determine if a pathname is absolute or not.  For
 // URL values this mainly consists of a check for a leading slash.  For
 // patterns we do some additional checking for escaped or grouped slashes.
@@ -31,9 +30,13 @@ export function isAbsolutePathname(pathname: string, isPattern: boolean): boolea
 
   return false;
 }
+
+const applyNodeJSFixes = (str: string) => str.replace("|", "%7C");
+
 function isASCII(str: string, extended: boolean) {
   return (extended ? /^[\x00-\xFF]*$/ : /^[\x00-\x7F]*$/).test(str);
 }
+
 function validatePatternEncoding(pattern: string, component: string) {
   if (!pattern.length)
     return pattern;
@@ -45,51 +48,52 @@ function validatePatternEncoding(pattern: string, component: string) {
   throw new TypeError(`Illegal character in '${component}' pattern '${pattern}'. `
     + "Patterns must be URL encoded ASCII.");
 }
+
 export function canonicalizeHash(hash: string, isPattern: boolean) {
   if (isPattern) {
     return validatePatternEncoding(hash, "hash");
   }
   const url = new URL("https://example.com");
   url.hash = hash;
-  // NOTE: Node URL handling is buggy!
-  return url.hash ? url.hash.substring(1, url.hash.length).replace("|", "%7C") : '';
+  return url.hash ? applyNodeJSFixes(url.hash.substring(1, url.hash.length)) : '';
 }
+
 export function canonicalizeSearch(search: string, isPattern: boolean) {
   if (isPattern) {
     return validatePatternEncoding(search, "search");
   }
   const url = new URL("https://example.com");
   url.search = search;
-  // NOTE: Node URL handling is buggy!
-  return url.search ? url.search.substring(1, url.search.length).replace("|", "%7C") : '';
+  return url.search ? applyNodeJSFixes(url.search.substring(1, url.search.length)) : '';
 }
+
 export function canonicalizeHostname(hostname: string, isPattern: boolean) {
   if (isPattern) {
     return validatePatternEncoding(hostname, "hostname");
   }
   const url = new URL("https://example.com");
   url.hostname = hostname;
-  // NOTE: Node URL handling is buggy!
-  return url.hostname.replace("|", "%7C");
+  return applyNodeJSFixes(url.hostname);
 }
+
 export function canonicalizePassword(password: string, isPattern: boolean) {
   if (isPattern) {
     return validatePatternEncoding(password, "password");
   }
   const url = new URL("https://example.com");
   url.password = password;
-  // NOTE: Node URL handling is buggy!
-  return url.password.replace("|", "%7C");
+  return applyNodeJSFixes(url.password);
 }
+
 export function canonicalizeUsername(username: string, isPattern: boolean) {
   if (isPattern) {
     return validatePatternEncoding(username, "username");
   }
   const url = new URL("https://example.com");
   url.username = username;
-  // NOTE: Node URL handling is buggy!
-  return url.username.replace("|", "%7C");
+  return applyNodeJSFixes(url.username);
 }
+
 export function canonicalizePathname(pathname: string, isPattern: boolean) {
   if (isPattern) {
     return validatePatternEncoding(pathname, "pathname");
@@ -101,9 +105,31 @@ export function canonicalizePathname(pathname: string, isPattern: boolean) {
     pathname = pathname.substring(1, pathname.length);
   }
 
-  // NOTE: Node URL handling is buggy!
-  return pathname.replace("|", "%7C");
+  return applyNodeJSFixes(pathname);
 }
+
+export function canonicalizePort(port: string, isPattern: boolean): string {
+  if (isPattern) {
+    return validatePatternEncoding(port, "port");
+  }
+  // Since ports only consist of digits there should be no encoding needed.
+  // Therefore we directly use the UTF8 encoding version of CanonicalizePort().
+  if (/^[0-9]*$/.test(port) && parseInt(port) <= 65535) {
+    return port;
+  }
+  throw new TypeError(`Invalid port '${port}'.`);
+}
+
+export function canonicalizeProtocol(protocol: string, isPattern: boolean) {
+  if (isPattern) {
+    return validatePatternEncoding(protocol, "protocol");
+  }
+
+  if (/^[-+.A-Za-z0-9]*$/.test(protocol))
+    return protocol.toLowerCase();
+  throw new TypeError(`Invalid protocol '${protocol}'.`);
+}
+
 export function defaultPortForProtocol(protocol: string): string {
   switch (protocol) {
     case "ws":
@@ -117,24 +143,4 @@ export function defaultPortForProtocol(protocol: string): string {
     default:
       return '';
   }
-}
-export function canonicalizePort(port: string, isPattern: boolean): string {
-  if (isPattern) {
-    return validatePatternEncoding(port, "port");
-  }
-  // Since ports only consist of digits there should be no encoding needed.
-  // Therefore we directly use the UTF8 encoding version of CanonicalizePort().
-  if (/^[0-9]*$/.test(port) && parseInt(port) <= 65535) {
-    return port;
-  }
-  throw new TypeError(`Invalid port '${port}'.`);
-}
-export function canonicalizeProtocol(protocol: string, isPattern: boolean) {
-  if (isPattern) {
-    return validatePatternEncoding(protocol, "protocol");
-  }
-
-  if (/^[-+.A-Za-z0-9]*$/.test(protocol))
-    return protocol.toLowerCase();
-  throw new TypeError(`Invalid protocol '${protocol}'.`);
 }

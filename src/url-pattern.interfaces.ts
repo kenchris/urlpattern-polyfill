@@ -1,4 +1,3 @@
-
 export interface URLPatternInit {
   baseURL?: string;
   username?: string;

@@ -2,7 +2,6 @@ import { parseShorthand } from './parseShorthand';
 import { URLPattern } from './url-pattern';
 import { URLPatternComponentResult } from './url-pattern.interfaces';
 
-// -------------
 export class URLPatternList {
   private patterns: Array<URLPattern> = [];
 
