@@ -1,12 +1,12 @@
 import { parseShorthand } from './parseShorthand';
-import { URLPatternComponentResult } from './url-pattern.interfaces';
 import { URLPattern } from './url-pattern';
+import { URLPatternComponentResult } from './url-pattern.interfaces';
 
 // -------------
 export class URLPatternList {
   private patterns: Array<URLPattern> = [];
 
-  constructor(list: any, options = {}) {
+  constructor(list: URLPattern[], options = {}) {
     if (!Array.isArray(list)) {
       throw TypeError('parameter list must be if type URLPattern[]');
     }

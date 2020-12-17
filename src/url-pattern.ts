@@ -128,27 +128,21 @@ export class URLPattern {
   private regexp: any = {};
   private keys: any = {};
 
-  constructor(...args: any) {
-    let init: URLPatternInit;
-
-    if (typeof args[0] === 'object') {
-      init = args[0];
-    }
+  constructor(init: URLPatternInit | string, baseURL?: string) {
 
     // shorthand
-    else if (typeof args[0] === 'string') {
-      init = parseShorthand(args[0]);
-      if (args[1]) {
-        if (typeof args[1] === 'string') {
-          init.baseURL = args[1];
+    if (typeof init === 'string') {
+      init = parseShorthand(init);
+      if (baseURL) {
+        if (typeof baseURL === 'string') {
+          init.baseURL = baseURL;
         } else {
-          throw new TypeError();
+          throw new TypeError(`baseURL parameter should be a string`);
         }
       }
     }
-
     // invalid arguments
-    else {
+    if (typeof init !== 'object') {
       throw new TypeError('Incorrect params passed');
     }
 
@@ -164,7 +158,7 @@ export class URLPattern {
     };
 
     this.pattern = applyInit(defaults, init, true);
-    let component:URLPatternKeys;
+    let component: URLPatternKeys;
     for (component in this.pattern) {
       let options;
       const pattern = this.pattern[component];
@@ -227,7 +221,7 @@ export class URLPattern {
   }
 
   exec(input: string | URLPatternInit): URLPatternComponentResult | null | undefined {
-    let values= {} as URLPatternInit;
+    let values = {} as URLPatternInit;
 
     if (typeof input === 'undefined') {
       return;
@@ -244,7 +238,7 @@ export class URLPattern {
     }
 
     let result: URLPatternComponentResult | null = null;
-    let component:URLPatternKeys
+    let component: URLPatternKeys;
     for (component in this.pattern) {
       let match;
       let portMatchFix = component == 'port' && values.protocol && values.port === defaultPortForProtocol(values.protocol);
