@@ -650,12 +650,25 @@
     }
   },
   {
+    "pattern": { "protocol": "foo-bar" },
+    "input": { "protocol": "foo-bar" },
+    "expected": {
+      "input": { "protocol": "foo-bar" },
+      "protocol": { "input": "foo-bar", "groups": {} }
+    }
+  },
+  {
     "pattern": { "username": "caf%C3%A9" },
     "input": { "username" : "café" },
     "expected": {
       "input": { "username" : "café" },
       "username": { "input": "caf%C3%A9", "groups": {}}
     }
+  },
+  {
+    "pattern": { "username": "caf%c3%a9" },
+    "input": { "username" : "café" },
+    "expected": null
   },
   {
     "pattern": { "password": "caf%C3%A9" },
@@ -666,19 +679,16 @@
     }
   },
   {
+    "pattern": { "password": "caf%c3%a9" },
+    "input": { "password" : "café" },
+    "expected": null
+  },
+  {
     "pattern": { "hostname": "xn--caf-dma.com" },
     "input": { "hostname" : "café.com" },
     "expected": {
       "input": { "hostname" : "café.com" },
       "hostname": { "input": "xn--caf-dma.com", "groups": {}}
-    }
-  },
-  {
-    "pattern": { "hostname": "cafe%7C.com" },
-    "input": { "hostname" : "cafe|.com" },
-    "expected": {
-      "input": { "hostname" : "cafe|.com" },
-      "hostname": { "input": "cafe%7C.com", "groups": {}}
     }
   },
   {
@@ -726,6 +736,11 @@
       "input": { "pathname": "/café" },
       "pathname": { "input": "/caf%C3%A9", "groups": {}}
     }
+  },
+  {
+    "pattern": { "pathname": "/caf%c3%a9" },
+    "input": { "pathname": "/café" },
+    "expected": null
   },
   {
     "pattern": { "pathname": "/foo/bar" },
@@ -778,12 +793,22 @@
     }
   },
   {
+    "pattern": { "search": "q=caf%c3%a9" },
+    "input": { "search": "q=café" },
+    "expected": null
+  },
+  {
     "pattern": { "hash": "caf%C3%A9" },
     "input": { "hash": "café" },
     "expected": {
       "input": { "hash": "café" },
       "hash": { "input": "caf%C3%A9", "groups": {}}
     }
+  },
+  {
+    "pattern": { "hash": "caf%c3%a9" },
+    "input": { "hash": "café" },
+    "expected": null
   },
   {
     "pattern": { "protocol": "about", "pathname": "(blank|sourcedoc)" },

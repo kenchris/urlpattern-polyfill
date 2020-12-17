@@ -31,8 +31,6 @@ export function isAbsolutePathname(pathname: string, isPattern: boolean): boolea
   return false;
 }
 
-const applyNodeJSFixes = (str: string) => str.replace("|", "%7C");
-
 function isASCII(str: string, extended: boolean) {
   return (extended ? /^[\x00-\xFF]*$/ : /^[\x00-\x7F]*$/).test(str);
 }
@@ -55,7 +53,7 @@ export function canonicalizeHash(hash: string, isPattern: boolean) {
   }
   const url = new URL("https://example.com");
   url.hash = hash;
-  return url.hash ? applyNodeJSFixes(url.hash.substring(1, url.hash.length)) : '';
+  return url.hash ? url.hash.substring(1, url.hash.length) : '';
 }
 
 export function canonicalizeSearch(search: string, isPattern: boolean) {
@@ -64,7 +62,7 @@ export function canonicalizeSearch(search: string, isPattern: boolean) {
   }
   const url = new URL("https://example.com");
   url.search = search;
-  return url.search ? applyNodeJSFixes(url.search.substring(1, url.search.length)) : '';
+  return url.search ? url.search.substring(1, url.search.length) : '';
 }
 
 export function canonicalizeHostname(hostname: string, isPattern: boolean) {
@@ -73,7 +71,7 @@ export function canonicalizeHostname(hostname: string, isPattern: boolean) {
   }
   const url = new URL("https://example.com");
   url.hostname = hostname;
-  return applyNodeJSFixes(url.hostname);
+  return url.hostname;
 }
 
 export function canonicalizePassword(password: string, isPattern: boolean) {
@@ -82,7 +80,7 @@ export function canonicalizePassword(password: string, isPattern: boolean) {
   }
   const url = new URL("https://example.com");
   url.password = password;
-  return applyNodeJSFixes(url.password);
+  return url.password;
 }
 
 export function canonicalizeUsername(username: string, isPattern: boolean) {
@@ -91,7 +89,7 @@ export function canonicalizeUsername(username: string, isPattern: boolean) {
   }
   const url = new URL("https://example.com");
   url.username = username;
-  return applyNodeJSFixes(url.username);
+  return url.username;
 }
 
 export function canonicalizePathname(pathname: string, isPattern: boolean) {
@@ -105,7 +103,7 @@ export function canonicalizePathname(pathname: string, isPattern: boolean) {
     pathname = pathname.substring(1, pathname.length);
   }
 
-  return applyNodeJSFixes(pathname);
+  return pathname;
 }
 
 export function canonicalizePort(port: string, isPattern: boolean): string {
