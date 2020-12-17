@@ -4,15 +4,6 @@ import {
   ParseOptions
 } from "./path-to-regex-6.2";
 
-if (!String.prototype.replaceAll) {
-	String.prototype.replaceAll = function(searchValue: string | RegExp, replaceValue: any): string {
-		if (Object.prototype.toString.call(searchValue).toLowerCase() === '[object regexp]') {
-			return this.replace(searchValue, replaceValue);
-		}
-		return this.replace(new RegExp(searchValue, 'g'), replaceValue);
-	};
-}
-
 // The default wildcard pattern used for a component when the constructor
 // input does not provide an explicit value.
 const DEFAULT_PATTERN = "(.*)";
