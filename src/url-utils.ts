@@ -140,4 +140,3 @@ export function canonicalizeProtocol(protocol: string, isPattern: boolean) {
     return protocol.toLowerCase();
   throw new TypeError(`Invalid protocol '${protocol}'.`);
 }
-

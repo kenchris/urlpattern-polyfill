@@ -1,5 +1,5 @@
-import { ParseOptions, pathToRegexp, TokensToRegexpOptions } from './path-to-regex-6.2';
-import { URLPatternComponentResult, URLPatternInit, URLPatternValues } from './url-pattern.interfaces';
+import {ParseOptions, pathToRegexp, TokensToRegexpOptions} from './path-to-regex-6.2';
+import {URLPatternComponentResult, URLPatternInit, URLPatternValues} from './url-pattern.interfaces';
 import {
   canonicalizeHash,
   canonicalizeHostname,
@@ -10,7 +10,7 @@ import {
   canonicalizeSearch,
   canonicalizeUsername,
   defaultPortForProtocol,
-  isAbsolutePathname
+  isAbsolutePathname,
 } from './url-utils';
 
 // The default wildcard pattern used for a component when the constructor
@@ -100,8 +100,8 @@ function extractValues(url: string): URLPatternInit {
     hostname: o.hostname,
     port: o.port,
     pathname: o.pathname,
-    search: o.search != "" ? o.search.substring(1, o.search.length) : undefined,
-    hash: o.hash != "" ? o.hash.substring(1, o.hash.length) : undefined
+    search: o.search != '' ? o.search.substring(1, o.search.length) : undefined,
+    hash: o.hash != '' ? o.hash.substring(1, o.hash.length) : undefined,
   };
 }
 
@@ -330,14 +330,14 @@ export class URLPatternList {
 
   constructor(list: any, options = {}) {
     if (!Array.isArray(list)) {
-      throw TypeError;
+      throw TypeError('parameter list must be if type URLPattern[]');
     }
 
     const firstItem = list[0];
     if (firstItem instanceof URLPattern) {
       for (let pattern of list) {
         if (!(pattern instanceof URLPattern)) {
-          throw TypeError;
+          throw TypeError('parameter list must be if type URLPattern[]');
         }
         this.patterns.push(pattern);
       }
@@ -350,13 +350,13 @@ export class URLPatternList {
           } else if (typeof patternInit === 'string') {
             init = Object.assign(Object.assign({}, options), parseShorthand(patternInit));
           } else {
-            throw TypeError;
+            throw new TypeError('List contains no parsable information');
           }
 
           this.patterns.push(new URLPattern(init));
         }
       } catch {
-        throw TypeError;
+        throw new TypeError('List contains no parsable information');
       }
     }
   }
