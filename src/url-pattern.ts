@@ -1,6 +1,6 @@
-import { parseShorthand } from './parseShorthand';
-import { ParseOptions, pathToRegexp, TokensToRegexpOptions } from './path-to-regex-6.2';
-import { URLPatternComponentResult, URLPatternInit, URLPatternValues } from './url-pattern.interfaces';
+import {parseShorthand} from './parseShorthand';
+import {ParseOptions, pathToRegexp, TokensToRegexpOptions} from './path-to-regex-6.2';
+import {URLPatternComponentResult, URLPatternInit, URLPatternKeys} from './url-pattern.interfaces';
 import {
   canonicalizeHash,
   canonicalizeHostname,
@@ -11,7 +11,7 @@ import {
   canonicalizeSearch,
   canonicalizeUsername,
   defaultPortForProtocol,
-  isAbsolutePathname
+  isAbsolutePathname,
 } from './url-utils';
 
 // The default wildcard pattern used for a component when the constructor
@@ -65,7 +65,7 @@ function extractValues(url: string): URLPatternInit {
 // A utility method that takes a URLPatternInit, splits it apart, and applies
 // the individual component values in the given set of strings.  The strings
 // are only applied if a value is present in the init structure.
-function applyInit(o: URLPatternValues, init: URLPatternInit, isPattern: boolean): URLPatternValues {
+function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean): URLPatternInit {
   // If there is a baseURL we need to apply its component values first.  The
   // rest of the URLPatternInit structure will then later override these
   // values.  Note, the baseURL will always set either an empty string or
@@ -91,16 +91,11 @@ function applyInit(o: URLPatternValues, init: URLPatternInit, isPattern: boolean
 
   // Apply the URLPatternInit component values on top of the default and
   // baseURL values.
-  if (init.protocol)
-    o.protocol = canonicalizeProtocol(init.protocol, isPattern);
-  if (init.username)
-    o.username = canonicalizeUsername(init.username, isPattern);
-  if (init.password)
-    o.password = canonicalizePassword(init.password, isPattern);
-  if (init.hostname)
-    o.hostname = canonicalizeHostname(init.hostname, isPattern);
-  if (init.port)
-    o.port = canonicalizePort(init.port, isPattern);
+  if (init.protocol) o.protocol = canonicalizeProtocol(init.protocol, isPattern);
+  if (init.username) o.username = canonicalizeUsername(init.username, isPattern);
+  if (init.password) o.password = canonicalizePassword(init.password, isPattern);
+  if (init.hostname) o.hostname = canonicalizeHostname(init.hostname, isPattern);
+  if (init.port) o.port = canonicalizePort(init.port, isPattern);
 
   if (init.pathname) {
     o.pathname = init.pathname;
@@ -122,16 +117,14 @@ function applyInit(o: URLPatternValues, init: URLPatternInit, isPattern: boolean
     }
     o.pathname = canonicalizePathname(o.pathname, isPattern);
   }
-  if (init.search)
-    o.search = canonicalizeSearch(init.search, isPattern);
-  if (init.hash)
-    o.hash = canonicalizeHash(init.hash, isPattern);
+  if (init.search) o.search = canonicalizeSearch(init.search, isPattern);
+  if (init.hash) o.hash = canonicalizeHash(init.hash, isPattern);
 
   return o;
 }
 
 export class URLPattern {
-  private pattern: URLPatternValues;
+  private pattern: URLPatternInit;
   private regexp: any = {};
   private keys: any = {};
 
@@ -171,8 +164,8 @@ export class URLPattern {
     };
 
     this.pattern = applyInit(defaults, init, true);
-
-    for (let component in this.pattern) {
+    let component:URLPatternKeys;
+    for (component in this.pattern) {
       let options;
       const pattern = this.pattern[component];
       this.keys[component] = [];
@@ -197,7 +190,7 @@ export class URLPattern {
   }
 
   test(input: string) {
-    let values: URLPatternValues = {};
+    let values: URLPatternInit = {};
 
     if (typeof input === 'undefined') {
       return false;
@@ -234,7 +227,7 @@ export class URLPattern {
   }
 
   exec(input: string | URLPatternInit): URLPatternComponentResult | null | undefined {
-    let values: URLPatternValues = {};
+    let values= {} as URLPatternInit;
 
     if (typeof input === 'undefined') {
       return;
@@ -251,7 +244,8 @@ export class URLPattern {
     }
 
     let result: URLPatternComponentResult | null = null;
-    for (let component in this.pattern) {
+    let component:URLPatternKeys
+    for (component in this.pattern) {
       let match;
       let portMatchFix = component == 'port' && values.protocol && values.port === defaultPortForProtocol(values.protocol);
       if (portMatchFix) {
@@ -275,8 +269,7 @@ export class URLPattern {
         }
       }
 
-      if (!result)
-        result = {};
+      if (!result) result = {};
 
       result[component] = {
         input: values[component] || '',
@@ -287,74 +280,5 @@ export class URLPattern {
     }
 
     return result;
-  }
-}
-// -------------
-
-export class URLPatternList {
-  private patterns: Array<URLPattern> = [];
-
-  constructor(list: any, options = {}) {
-    if (!Array.isArray(list)) {
-      throw TypeError('parameter list must be if type URLPattern[]');
-    }
-
-    const firstItem = list[0];
-    if (firstItem instanceof URLPattern) {
-      for (let pattern of list) {
-        if (!(pattern instanceof URLPattern)) {
-          throw TypeError('parameter list must be if type URLPattern[]');
-        }
-        this.patterns.push(pattern);
-      }
-    } else {
-      try {
-        for (let patternInit of list) {
-          let init = {};
-          if (typeof patternInit === 'object') {
-            init = Object.assign(Object.assign({}, options), patternInit);
-          } else if (typeof patternInit === 'string') {
-            init = Object.assign(Object.assign({}, options), parseShorthand(patternInit));
-          } else {
-            throw new TypeError('List contains no parsable information');
-          }
-
-          this.patterns.push(new URLPattern(init));
-        }
-      } catch {
-        throw new TypeError('List contains no parsable information');
-      }
-    }
-  }
-
-  test(url: string) {
-    try {
-      new URL(url); // allows string or URL object.
-    } catch {
-      return false;
-    }
-
-    for (let urlPattern of this.patterns) {
-      if (urlPattern.test(url)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  exec(url: string): URLPatternComponentResult | null | number {
-    try {
-      new URL(url); // allows string or URL object.
-    } catch {
-      return null;
-    }
-
-    for (let urlPattern of this.patterns) {
-      const value = urlPattern.exec(url);
-      if (value) {
-        return value;
-      }
-    }
-    return null;
   }
 }

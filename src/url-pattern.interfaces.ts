@@ -11,17 +11,7 @@ export interface URLPatternInit {
   hash?: string;
 }
 
-export interface URLPatternValues {
-  [key: string]: string | undefined;
-  pathname?: string;
-  protocol?: string;
-  username?: string;
-  password?: string;
-  hostname?: string;
-  port?: string;
-  search?: string;
-  hash?: string;
-}
+export type URLPatternKeys = keyof URLPatternInit
 
 export interface URLPatternComponentResult {
   input?: any;
