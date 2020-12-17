@@ -1,4 +1,3 @@
-
 export function parseShorthand(str: string) {
   let protocol = '';
   let hostname = '';

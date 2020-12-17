@@ -82,10 +82,10 @@ let i = 0;
 
 for (let entry of data) {
   test(`Test data ${i++}: Pattern: ${JSON.stringify(entry.pattern)} Input: ${JSON.stringify(entry.input)}`, t => {
-    //if (entry.error) {
-    //  t.throws(_ => new URLPattern(entry.pattern), {instanceOf: TypeError});
-    //  return;
-    //}
+    if (entry.error) {
+      t.throws(_ => new URLPattern(entry.pattern), {instanceOf: TypeError});
+      return;
+    }
 
     const pattern = new URLPattern(entry.pattern);
 

@@ -37,10 +37,8 @@ function isASCII(str: string, extended: boolean) {
 function validatePatternEncoding(pattern: string, component: string) {
   if (!pattern.length)
     return pattern;
-  if (isASCII(pattern, true))
+  if (isASCII(pattern, false))
     return pattern; // ASCII only
-
-
 
   // TODO: Consider if we should canonicalize patterns instead.  See:
   //       https://github.com/WICG/urlpattern/issues/33
