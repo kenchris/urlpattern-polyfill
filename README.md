@@ -99,7 +99,7 @@ interface URLPatternInit {
   hash?: string;
 }
 
-interface URLPatterncomponentResult {
+interface URLPatternComponentResult {
   input: string;
   groups: { [key: string]: string };
 }
@@ -107,15 +107,53 @@ interface URLPatterncomponentResult {
 interface URLPatternResult {
   input: URLPatternInit | string;
 
-  protocol: URLPatterncomponentResult;
-  username: URLPatterncomponentResult;
-  password: URLPatterncomponentResult;
-  hostname: URLPatterncomponentResult;
-  port: URLPatterncomponentResult;
-  pathname: URLPatterncomponentResult;
-  search: URLPatterncomponentResult;
-  hash: URLPatterncomponentResult;
+  protocol: URLPatternComponentResult;
+  username: URLPatternComponentResult;
+  password: URLPatternComponentResult;
+  hostname: URLPatternComponentResult;
+  port: URLPatternComponentResult;
+  pathname: URLPatternComponentResult;
+  search: URLPatternComponentResult;
+  hash: URLPatternComponentResult;
 }
+```
+
+Pattern syntax
+===
+The pattern syntax here is based on what is used in the popular path-to-regexp library.
+
+* An understanding of a "divider" that separates segments of the string.  For the pathname this is typically the `"/"` character.
+* A regex group defined by an enclosed set of parentheses.  Inside of the parentheses a general regex may be defined.
+* A named group that matches characters until the next divider.  The named group begins with a `":"` character and then a name.  For example, `"/:foo/:bar"` has two named groups.
+* A custom regex for a named group.  In this case a set of parentheses with a regex immediately follows the named group; e.g. `"/:foo(.*)"` will override the default of matching to the next divider.
+* A modifier may optionally follow a regex or named group.  A modifier is a `"?"`, `"*"`, or `"+"` functions just as they do in regular expressions.  When a group is optional or repeated and it's preceded by a divider then the divider is also optional or repeated.  For example, `"/foo/:bar?"` will match `"/foo"`, `"/foo/"`, or `"/foo/baz"`.  Escaping the divider will make it required instead.
+* A way to greedily match characters, even across dividers, by using `"(.*)"` (so-called unnamed groups).
+
+
+Currently we plan to have these known differences with path-to-regexp:
+
+* No support for custom prefixes and suffixes.
+
+
+Canonicalization
+===
+
+URLs have a canonical form that is based on ASCII, meaning that [internationalized domain names](https://en.wikipedia.org/wiki/Internationalized_domain_name) (hostnames) also have a canonical ASCII based representation, and that other components such as `hash`, `search` and `pathname` are encoded using [percent encoding](https://en.wikipedia.org/wiki/Percent-encoding).
+
+Currently `URLPattern` does not perform any encoding or normalization of the patterns. So a developer would need to URL encode unicode characters before passing the pattern into the constructor. Similarly, the constructor does not do things like flattening pathnames such as /foo/../bar to /bar. Currently the pattern must be written to target canonical URL output manually.
+
+It does, however, perform these operations for `test()` and `exec()` input.
+
+Encoding components can easily be done manually, but do not encoding the pattern syntax:
+
+```javascript
+encodeURIComponent("?q=æøå")
+// "%3Fq%3D%C3%A6%C3%B8%C3%A5"
+```
+
+```javascript
+new URL("https://ølerlækkernårdetermit.dk").hostname
+// "xn--lerlkkernrdetermit-dubo78a.dk"
 ```
 
 Learn more
