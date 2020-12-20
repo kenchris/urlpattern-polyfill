@@ -1,6 +1,6 @@
 import {parseShorthand} from './parseShorthand';
 import {ParseOptions, pathToRegexp, TokensToRegexpOptions} from './path-to-regex-6.2';
-import {URLPatternComponentResult, URLPatternInit, URLPatternKeys} from './url-pattern.interfaces';
+import {URLPatternResult, URLPatternInit, URLPatternKeys} from './url-pattern.interfaces';
 import {
   canonicalizeHash,
   canonicalizeHostname,
@@ -228,7 +228,7 @@ export class URLPattern {
     return true;
   }
 
-  exec(input: string | URLPatternInit): URLPatternComponentResult | null | undefined {
+  exec(input: string | URLPatternInit): URLPatternResult | null | undefined {
     let values = {} as URLPatternInit;
 
     if (typeof input === 'undefined') {
@@ -247,7 +247,10 @@ export class URLPattern {
       return null;
     }
 
-    let result: URLPatternComponentResult | null = null;
+    let result: any = {
+      input: input,
+    };
+
     let component: URLPatternKeys;
     for (component in this.pattern) {
       let match;
@@ -279,8 +282,6 @@ export class URLPattern {
         input: values[component] || '',
         groups,
       };
-
-      result.input = input;
     }
 
     return result;

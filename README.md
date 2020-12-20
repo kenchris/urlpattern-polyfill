@@ -7,6 +7,117 @@ This is a polyfill for the URLPattern and URLPatternList API currently in develo
 
 Once the initial Chromium prototype is complete we will gather feedback and iterate. When we believe the API is stable, we will then codify it in a spec.
 
+Basic example
+---
+
+```javascript
+let p = new URLPattern({ pathname: '/foo/:name });
+
+let r = p.exec('https://example.com/foo/bar');
+console.log(r.pathname.input); // "/foo/bar"
+console.log(r.pathname.groups.name); // "bar"
+
+let r2 = p.exec({ pathname: '/foo/baz' });
+console.log(r2.pathname.groups.name); // "baz"
+```
+
+Example of matching same-origin JPG or PNG requests
+---
+
+```javascript
+// Match same-origin jpg or png URLs.
+// Note: This uses a named group to make it easier to access
+//       the result later.
+const p = new URLPattern({
+  pathname: '/*.:filetype(jpg|png)',
+  baseURL: self.location
+});
+
+for (let url in url_list) {
+  const r = p.exec(url);
+
+  // skip non-matches
+  if (!r) {
+    continue;
+  }
+
+  if (r.pathname.groups['filetype'] === 'jpg') {
+    // process jpg
+  } else if (r.pathname.groups['filetype'] === 'png') {
+    // process png
+  }
+}
+```
+
+The pattern in this case can be made simpler without the origin check by leaving off the baseURL.
+
+```javascript
+// Match any URL ending with 'jpg' or 'png'.
+const p = new URLPattern({ pathname: '/*.:filetype(jpg|png)' });
+```
+
+Example of Short Form Support
+---
+We are planning to also support a "short form" for initializing URLPattern objects.
+This is supported by the polyfill but not yet by the Chromium implementation.
+
+For example:
+
+```javascript
+const p = new URLPattern("https://*.example.com/foo/*");
+```
+
+Or:
+
+```javascript
+const p = new URLPattern("foo/*", self.location);
+```
+
+API reference
+===
+
+API overview with typeScript type annotations is found below. Associated browser Web IDL can be found [here](https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/modules/url_pattern/).
+
+```ts
+class URLPattern {
+  constructor(init: URLPatternInit);
+  constructor(shortPattern: string, baseURL: string = ""));
+
+  test(input: URLPattern | string): boolean;
+  exec(input: URLPattern | string): URLPatternResult;
+};
+
+interface URLPatternInit {
+  baseURL?: string;
+  username?: string;
+  password?: string;
+  protocol?: string;
+  hostname?: string;
+  port?: string;
+  pathname?: string;
+  search?: string;
+  hash?: string;
+}
+
+interface URLPatterncomponentResult {
+  input: string;
+  groups: { [key: string]: string };
+}
+
+interface URLPatternResult {
+  input: URLPatternInit | string;
+
+  protocol: URLPatterncomponentResult;
+  username: URLPatterncomponentResult;
+  password: URLPatterncomponentResult;
+  hostname: URLPatterncomponentResult;
+  port: URLPatterncomponentResult;
+  pathname: URLPatterncomponentResult;
+  search: URLPatterncomponentResult;
+  hash: URLPatterncomponentResult;
+}
+```
+
 Learn more
 ===
 

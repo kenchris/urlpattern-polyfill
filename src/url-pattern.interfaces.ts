@@ -12,7 +12,19 @@ export interface URLPatternInit {
 
 export type URLPatternKeys = keyof URLPatternInit
 
-export interface URLPatternComponentResult {
-  input?: any;
-  [key: string]: { input: any; groups: any; } | any;
+export interface URLPatternResult {
+  input: URLPatternInit | string;
+  protocol: URLPatterncomponentResult;
+  username: URLPatterncomponentResult;
+  password: URLPatterncomponentResult;
+  hostname: URLPatterncomponentResult;
+  port: URLPatterncomponentResult;
+  pathname: URLPatterncomponentResult;
+  search: URLPatterncomponentResult;
+  hash: URLPatterncomponentResult;
+}
+
+export interface URLPatterncomponentResult {
+  input: string;
+  groups: { [key: string]: string };
 }

@@ -1,6 +1,6 @@
 import { parseShorthand } from './parseShorthand';
 import { URLPattern } from './url-pattern';
-import { URLPatternComponentResult } from './url-pattern.interfaces';
+import { URLPatternResult } from './url-pattern.interfaces';
 
 export class URLPatternList {
   private patterns: Array<URLPattern> = [];
@@ -53,7 +53,7 @@ export class URLPatternList {
     return false;
   }
 
-  exec(url: string): URLPatternComponentResult | null | number {
+  exec(url: string): URLPatternResult | null | number {
     try {
       new URL(url); // allows string or URL object.
     } catch {
