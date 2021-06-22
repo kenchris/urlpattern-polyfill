@@ -1,5 +1,5 @@
 import {parseShorthand} from './parseShorthand';
-import {ParseOptions, pathToRegexp, TokensToRegexpOptions} from './path-to-regex-6.2';
+import {ParseOptions, parse, Token, tokensToRegexp, TokensToRegexpOptions} from './path-to-regex-modified';
 import {URLPatternResult, URLPatternInit, URLPatternKeys} from './url-pattern.interfaces';
 import {
   canonicalizeHash,
@@ -128,10 +128,119 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
   return o;
 }
 
+function escapePatternString(value: string): string {
+  return value.replace(/([+*?:{}()\\])/g, '\\$1');
+}
+
+function escapeRegexpString(value: string): string {
+  return value.replace(/([.+*?^${}()[\]|/\\])/g, '\\$1');
+}
+
+// A utility function to convert a list of path-to-regexp Tokens back into
+// a pattern string.  The resulting pattern should be equivalent to the
+// original parsed pattern, although they may differ due to canonicalization.
+function tokensToPattern(tokens: Token[],
+                         options: TokensToRegexpOptions & ParseOptions): string {
+  let result = "";
+  for (const token of tokens) {
+    // Plain text tokens can be directly added to the pattern string.
+    if (typeof token === 'string') {
+      result += escapePatternString(token);
+      continue;
+    }
+
+    // Tokens without a pattern are also plain text, but were originally
+    // contained in a `{ ... }` group.  There may be a modifier following
+    // the group.  If there is no modifier then we strip the braces off
+    // as they are superfluous.
+    if (token.pattern === '') {
+      if (token.modifier === '') {
+        result += escapePatternString(token.prefix);
+        continue;
+      }
+      result += '{';
+      result += escapePatternString(token.prefix);
+      result += '}';
+      result += token.modifier;
+      continue;
+    }
+
+    // Determine if the token needs a grouping like `{ ... }`.  This is only
+    // necessary when using a non-automatic prefix or any suffix.
+    const options_prefixes = options.prefixes ? options.prefixes : "./";
+    const needs_grouping =
+      token.suffix !== "" ||
+      (token.prefix !== "" &&
+       (token.prefix.length !== 1 ||
+        !options_prefixes.includes(token.prefix)));
+
+    // Determine if the token name was custom or automatically assigned.
+    const custom_name = typeof token.name === 'number';
+
+    // This is a full featured token.  We must generate a string that looks
+    // like:
+    //
+    //  { <prefix> <pattern> <suffix> } <modifier>
+    //
+    // Where the { and } may not be needed.  The <pattern> will be a regexp,
+    // named group, or wildcard.
+    if (needs_grouping) {
+      result += '{';
+    }
+
+    result += escapePatternString(token.prefix);
+
+    if (custom_name) {
+      result += ':';
+      result += token.name;
+    }
+
+    const wildcard_pattern = ".*";
+    const segment_wildcard_pattern =
+        `[${escapeRegexpString(options.delimiter || '/#?')}]+?`;
+
+    if (token.pattern === wildcard_pattern) {
+      // We can only use the `*` wildcard card if the automatic
+      // numeric name is used for the group.  A custom name
+      // requires the regexp `(.*)` explicitly.
+      if (!custom_name) {
+        result += '*';
+      } else {
+        result += '(';
+        result += wildcard_pattern;
+        result += ')';
+      }
+    } else if (token.pattern === segment_wildcard_pattern) {
+      // We only need to emit a regexp if a custom name was
+      // not specified.  A custom name like `:foo` gets the
+      // kSegmentWildcard type automatically.
+      if (!custom_name) {
+        result += '(';
+        result += segment_wildcard_pattern;
+        result += ')';
+      }
+    } else {
+      result += '(';
+      result += token.pattern;
+      result += ')';
+    }
+
+    result += escapePatternString(token.suffix);
+
+    if (needs_grouping)
+      result += '}';
+
+    result += token.modifier;
+  }
+
+  return result;
+}
+
 export class URLPattern {
   private pattern: URLPatternInit;
   private regexp: any = {};
   private keys: any = {};
+  private component_pattern: any = {};
 
   constructor(init: URLPatternInit | string, baseURL?: string) {
     try {
@@ -179,7 +288,9 @@ export class URLPattern {
             options = DEFAULT_OPTIONS;
         }
         try {
-          this.regexp[component] = pathToRegexp(pattern as string, this.keys[component], options);
+          const tokens = parse(pattern as string, options);
+          this.regexp[component] = tokensToRegexp(tokens, this.keys[component], options);
+          this.component_pattern[component] = tokensToPattern(tokens, options);
         } catch {
           // If a pattern is illegal the constructor will throw an exception
           throw new TypeError(`invalid ${component} pattern '${this.pattern[component]}'.`);
@@ -285,5 +396,37 @@ export class URLPattern {
     }
 
     return result;
+  }
+
+  public get protocol() {
+    return this.component_pattern['protocol'];
+  }
+
+  public get username() {
+    return this.component_pattern['username'];
+  }
+
+  public get password() {
+    return this.component_pattern['password'];
+  }
+
+  public get hostname() {
+    return this.component_pattern['hostname'];
+  }
+
+  public get port() {
+    return this.component_pattern['port'];
+  }
+
+  public get pathname() {
+    return this.component_pattern['pathname'];
+  }
+
+  public get search() {
+    return this.component_pattern['search'];
+  }
+
+  public get hash() {
+    return this.component_pattern['hash'];
   }
 }
