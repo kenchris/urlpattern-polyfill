@@ -175,7 +175,7 @@ function tokensToPattern(tokens: Token[],
         !options_prefixes.includes(token.prefix)));
 
     // Determine if the token name was custom or automatically assigned.
-    const custom_name = typeof token.name === 'number';
+    const custom_name = typeof token.name !== 'number';
 
     // This is a full featured token.  We must generate a string that looks
     // like:
