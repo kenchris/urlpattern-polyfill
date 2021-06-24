@@ -94,7 +94,7 @@ let i = 0;
 
 for (let entry of data) {
   test(`Test data ${i++}: Pattern: ${JSON.stringify(entry.pattern)} Inputs: ${JSON.stringify(entry.inputs)}`, t => {
-    if (entry.error) {
+    if (entry.expected_obj === 'error') {
       t.throws(_ => new URLPattern(...entry.pattern), {instanceOf: TypeError});
       return;
     }
