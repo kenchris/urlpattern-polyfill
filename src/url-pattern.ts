@@ -193,7 +193,7 @@ function tokensToPattern(tokens: Token[],
 
     const wildcardPattern = ".*";
     const segmentWildcardPattern =
-        `[${escapeRegexpString(options.delimiter || '/#?')}]+?`;
+        `[^${escapeRegexpString(options.delimiter || '/#?')}]+?`;
 
     if (token.pattern === wildcardPattern) {
       // We can only use the `*` wildcard card if the automatic
