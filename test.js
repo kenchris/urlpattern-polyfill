@@ -181,6 +181,10 @@ for (let entry of data) {
       return;
     }
 
+    if (!entry.expected_match.inputs) {
+      entry.expected_match.inputs = entry.inputs;
+    }
+
     // Next verify the result.input is correct.  This may be a structured
     // URLPatternInit dictionary object or a URL string.
     t.is(exec_result.inputs.length,
@@ -221,7 +225,7 @@ for (let entry of data) {
           expected_obj.groups['0'] = '';
         }
       }
-      t.deepEqual(result[component], expected_obj, `exec() result for ${component}`);
+      t.deepEqual(exec_result[component], expected_obj, `exec() result for ${component}`);
     }
   });
 }
