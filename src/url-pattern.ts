@@ -89,9 +89,9 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
       o.password = baseURL.password;
       o.hostname = baseURL.hostname;
       o.port = baseURL.port;
-      o.pathname = baseURL.pathname ? baseURL.pathname : '/';
-      // Do no propagate search or hash from the base URL.  This matches the
-      // behavior when resolving a relative URL against a base URL.
+      o.pathname = baseURL.pathname;
+      o.search = baseURL.search ? baseURL.search.substring(1, baseURL.search.length) : '';
+      o.hash = baseURL.hash ? baseURL.hash.substring(1, baseURL.hash.length) : '';
     } catch {
       throw new TypeError(`invalid baseURL '${init.baseURL}'.`);
     }
