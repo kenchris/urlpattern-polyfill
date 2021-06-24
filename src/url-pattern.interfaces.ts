@@ -13,7 +13,7 @@ export interface URLPatternInit {
 export type URLPatternKeys = keyof URLPatternInit
 
 export interface URLPatternResult {
-  input: URLPatternInit | string;
+  inputs: [URLPatternInit | string];
   protocol: URLPatternComponentResult;
   username: URLPatternComponentResult;
   password: URLPatternComponentResult;
