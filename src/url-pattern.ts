@@ -10,8 +10,32 @@ import {
   canonicalizeProtocol,
   canonicalizeSearch,
   canonicalizeUsername,
+  defaultPortForProtocol,
   isAbsolutePathname,
+  isSpecialScheme,
+  protocolEncodeCallback,
+  usernameEncodeCallback,
+  passwordEncodeCallback,
+  hostnameEncodeCallback,
+  portEncodeCallback,
+  standardURLPathnameEncodeCallback,
+  pathURLPathnameEncodeCallback,
+  searchEncodeCallback,
+  hashEncodeCallback,
 } from './url-utils';
+
+// Define the components in a URL.  The ordering of this constant list is
+// signficant to the implementation below.
+const COMPONENTS: URLPatternKeys[]= [
+  'protocol',
+  'username',
+  'password',
+  'hostname',
+  'port',
+  'pathname',
+  'search',
+  'hash',
+];
 
 // The default wildcard pattern used for a component when the constructor
 // input does not provide an explicit value.
@@ -279,20 +303,57 @@ export class URLPattern {
       };
 
       this.pattern = applyInit(defaults, init, true);
+
+      if (defaultPortForProtocol(this.pattern.protocol) === this.pattern.port) {
+        this.pattern.port = '';
+      }
+
       let component: URLPatternKeys;
-      for (component in this.pattern) {
-        let options;
+      // Iterate in component order so we are sure to compile the protocol
+      // before the pathname.  We need to know the protocol in order to know
+      // which kind of canonicalization to apply.
+      for (component of COMPONENTS) {
+        if (!(component in this.pattern))
+          continue;
+        const options: TokensToRegexpOptions & ParseOptions = {};
         const pattern = this.pattern[component];
         this.keys[component] = [];
         switch (component) {
+          case 'protocol':
+            Object.assign(options, DEFAULT_OPTIONS);
+            options.encodePart = protocolEncodeCallback;
+            break;
+          case 'username':
+            Object.assign(options, DEFAULT_OPTIONS);
+            options.encodePart = usernameEncodeCallback;
+            break;
+          case 'password':
+            Object.assign(options, DEFAULT_OPTIONS);
+            options.encodePart = passwordEncodeCallback;
+            break;
           case 'hostname':
-            options = HOSTNAME_OPTIONS;
+            Object.assign(options, HOSTNAME_OPTIONS);
+            options.encodePart = hostnameEncodeCallback;
+            break;
+          case 'port':
+            Object.assign(options, DEFAULT_OPTIONS);
+            options.encodePart = portEncodeCallback;
             break;
           case 'pathname':
-            options = PATHNAME_OPTIONS;
+            Object.assign(options, PATHNAME_OPTIONS);
+            if (isSpecialScheme(this.regexp.protocol))
+              options.encodePart = standardURLPathnameEncodeCallback;
+            else
+              options.encodePart = pathURLPathnameEncodeCallback;
             break;
-          default:
-            options = DEFAULT_OPTIONS;
+          case 'search':
+            Object.assign(options, DEFAULT_OPTIONS);
+            options.encodePart = searchEncodeCallback;
+            break;
+          case 'hash':
+            Object.assign(options, DEFAULT_OPTIONS);
+            options.encodePart = hashEncodeCallback;
+            break;
         }
         try {
           const tokens = parse(pattern as string, options);
