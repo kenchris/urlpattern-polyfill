@@ -158,24 +158,21 @@ function tokensToPattern(tokens: Token[],
         result += escapePatternString(token.prefix);
         continue;
       }
-      result += '{';
-      result += escapePatternString(token.prefix);
-      result += '}';
-      result += token.modifier;
+      result += `{${escapePatternString(token.prefix)}}${token.modifier}`;
       continue;
     }
 
     // Determine if the token needs a grouping like `{ ... }`.  This is only
     // necessary when using a non-automatic prefix or any suffix.
-    const options_prefixes = options.prefixes ? options.prefixes : "./";
-    const needs_grouping =
+    const optionsPrefixes = options.prefixes || "./";
+    const needsGrouping =
       token.suffix !== "" ||
       (token.prefix !== "" &&
        (token.prefix.length !== 1 ||
-        !options_prefixes.includes(token.prefix)));
+        !optionsPrefixes.includes(token.prefix)));
 
     // Determine if the token name was custom or automatically assigned.
-    const custom_name = typeof token.name !== 'number';
+    const customName = typeof token.name !== 'number';
 
     // This is a full featured token.  We must generate a string that looks
     // like:
@@ -184,51 +181,45 @@ function tokensToPattern(tokens: Token[],
     //
     // Where the { and } may not be needed.  The <pattern> will be a regexp,
     // named group, or wildcard.
-    if (needs_grouping) {
+    if (needsGrouping) {
       result += '{';
     }
 
     result += escapePatternString(token.prefix);
 
-    if (custom_name) {
-      result += ':';
-      result += token.name;
+    if (customName) {
+      result += `:${token.name}`;
     }
 
-    const wildcard_pattern = ".*";
-    const segment_wildcard_pattern =
+    const wildcardPattern = ".*";
+    const segmentWildcardPattern =
         `[${escapeRegexpString(options.delimiter || '/#?')}]+?`;
 
-    if (token.pattern === wildcard_pattern) {
+    if (token.pattern === wildcardPattern) {
       // We can only use the `*` wildcard card if the automatic
       // numeric name is used for the group.  A custom name
       // requires the regexp `(.*)` explicitly.
-      if (!custom_name) {
+      if (!customName) {
         result += '*';
       } else {
-        result += '(';
-        result += wildcard_pattern;
-        result += ')';
+        result += `(${wildcardPattern})`;
       }
-    } else if (token.pattern === segment_wildcard_pattern) {
+    } else if (token.pattern === segmentWildcardPattern) {
       // We only need to emit a regexp if a custom name was
       // not specified.  A custom name like `:foo` gets the
       // kSegmentWildcard type automatically.
-      if (!custom_name) {
-        result += '(';
-        result += segment_wildcard_pattern;
-        result += ')';
+      if (!customName) {
+        result += `(${segmentWildcardPattern})`;
       }
     } else {
-      result += '(';
-      result += token.pattern;
-      result += ')';
+      result += `(${token.pattern})`;
     }
 
     result += escapePatternString(token.suffix);
 
-    if (needs_grouping)
+    if (needsGrouping) {
       result += '}';
+    }
 
     result += token.modifier;
   }
@@ -399,34 +390,34 @@ export class URLPattern {
   }
 
   public get protocol() {
-    return this.component_pattern['protocol'];
+    return this.component_pattern.protocol;
   }
 
   public get username() {
-    return this.component_pattern['username'];
+    return this.component_pattern.username;
   }
 
   public get password() {
-    return this.component_pattern['password'];
+    return this.component_pattern.password;
   }
 
   public get hostname() {
-    return this.component_pattern['hostname'];
+    return this.component_pattern.hostname;
   }
 
   public get port() {
-    return this.component_pattern['port'];
+    return this.component_pattern.port;
   }
 
   public get pathname() {
-    return this.component_pattern['pathname'];
+    return this.component_pattern.pathname;
   }
 
   public get search() {
-    return this.component_pattern['search'];
+    return this.component_pattern.search;
   }
 
   public get hash() {
-    return this.component_pattern['hash'];
+    return this.component_pattern.hash;
   }
 }
