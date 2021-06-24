@@ -31,25 +31,29 @@ export function isAbsolutePathname(pathname: string, isPattern: boolean): boolea
   return false;
 }
 
-function isASCII(str: string, extended: boolean) {
-  return (extended ? /^[\x00-\xFF]*$/ : /^[\x00-\x7F]*$/).test(str);
-}
-
-function validatePatternEncoding(pattern: string, component: string) {
-  if (!pattern.length)
-    return pattern;
-  if (isASCII(pattern, false))
-    return pattern; // ASCII only
-
-  // TODO: Consider if we should canonicalize patterns instead.  See:
-  //       https://github.com/WICG/urlpattern/issues/33
-  throw new TypeError(`Illegal character in '${component}' pattern '${pattern}'. `
-    + "Patterns must be URL encoded ASCII.");
+export function isSpecialScheme(protocol_regexp: any) {
+  if (!protocol_regexp) {
+    return true;
+  }
+  const specialSchemes = [
+    'ftp',
+    'file',
+    'http',
+    'https',
+    'ws',
+    'wss',
+  ];
+  for (const scheme of specialSchemes) {
+    if (protocol_regexp.test(scheme)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function canonicalizeHash(hash: string, isPattern: boolean) {
-  if (isPattern) {
-    return validatePatternEncoding(hash, "hash");
+  if (isPattern || hash === '') {
+    return hash;
   }
   const url = new URL("https://example.com");
   url.hash = hash;
@@ -57,8 +61,8 @@ export function canonicalizeHash(hash: string, isPattern: boolean) {
 }
 
 export function canonicalizeSearch(search: string, isPattern: boolean) {
-  if (isPattern) {
-    return validatePatternEncoding(search, "search");
+  if (isPattern || search === '') {
+    return search;
   }
   const url = new URL("https://example.com");
   url.search = search;
@@ -66,8 +70,8 @@ export function canonicalizeSearch(search: string, isPattern: boolean) {
 }
 
 export function canonicalizeHostname(hostname: string, isPattern: boolean) {
-  if (isPattern) {
-    return validatePatternEncoding(hostname, "hostname");
+  if (isPattern || hostname === '') {
+    return hostname;
   }
   const url = new URL("https://example.com");
   url.hostname = hostname;
@@ -75,8 +79,8 @@ export function canonicalizeHostname(hostname: string, isPattern: boolean) {
 }
 
 export function canonicalizePassword(password: string, isPattern: boolean) {
-  if (isPattern) {
-    return validatePatternEncoding(password, "password");
+  if (isPattern || password === '') {
+    return password;
   }
   const url = new URL("https://example.com");
   url.password = password;
@@ -84,8 +88,8 @@ export function canonicalizePassword(password: string, isPattern: boolean) {
 }
 
 export function canonicalizeUsername(username: string, isPattern: boolean) {
-  if (isPattern) {
-    return validatePatternEncoding(username, "username");
+  if (isPattern || username === '') {
+    return username;
   }
   const url = new URL("https://example.com");
   url.username = username;
@@ -93,8 +97,8 @@ export function canonicalizeUsername(username: string, isPattern: boolean) {
 }
 
 export function canonicalizePathname(pathname: string, isPattern: boolean) {
-  if (isPattern) {
-    return validatePatternEncoding(pathname, "pathname");
+  if (isPattern || pathname === '') {
+    return pathname;
   }
 
   const leadingSlash = pathname[0] == "/";
@@ -111,27 +115,19 @@ export function canonicalizePort(port: string, protocol: string | undefined, isP
     port = '';
   }
 
-  if (isPattern) {
-    return validatePatternEncoding(port, "port");
-  }
-
-  // Since ports only consist of digits there should be no encoding needed.
-  // Therefore we directly use the UTF8 encoding version of CanonicalizePort().
-  if (port === '' ||
-      (/^[0-9]*$/.test(port) && parseInt(port) <= 65535)) {
+  if (isPattern || port === '') {
     return port;
   }
-  throw new TypeError(`Invalid port '${port}'.`);
+
+  return portEncodeCallback(port);
 }
 
 export function canonicalizeProtocol(protocol: string, isPattern: boolean) {
-  if (isPattern) {
-    return validatePatternEncoding(protocol, "protocol");
+  if (isPattern || protocol === '') {
+    return protocol;
   }
 
-  if (/^[-+.A-Za-z0-9]*$/.test(protocol))
-    return protocol.toLowerCase();
-  throw new TypeError(`Invalid protocol '${protocol}'.`);
+  return protocolEncodeCallback(protocol);
 }
 
 export function defaultPortForProtocol(protocol: string | undefined): string {
@@ -147,4 +143,90 @@ export function defaultPortForProtocol(protocol: string | undefined): string {
     default:
       return '';
   }
+}
+
+export function protocolEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  if (/^[-+.A-Za-z0-9]*$/.test(input))
+    return input.toLowerCase();
+  throw new TypeError(`Invalid protocol '${input}'.`);
+}
+
+export function usernameEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  const url = new URL('https://example.com');
+  url.username = input;
+  return url.username;
+}
+
+export function passwordEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  const url = new URL('https://example.com');
+  url.password = input;
+  return url.password;
+}
+
+export function hostnameEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  const url = new URL('https://example.com');
+  url.hostname = input;
+  return url.hostname;
+}
+
+export function portEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  // Since ports only consist of digits there should be no encoding needed.
+  // Therefore we directly use the UTF8 encoding version of CanonicalizePort().
+  if ((/^[0-9]*$/.test(input) && parseInt(input) <= 65535)) {
+    return input;
+  }
+  throw new TypeError(`Invalid port '${input}'.`);
+}
+
+export function standardURLPathnameEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  const url = new URL('https://example.com');
+  url.pathname = input;
+  if (input[0] !== '/')
+    return url.pathname.substring(1, url.pathname.length);
+  return url.pathname;
+}
+
+export function pathURLPathnameEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  const url = new URL('data:example');
+  url.pathname = input;
+  return url.pathname;
+}
+
+export function searchEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  const url = new URL('https://example.com');
+  url.search = input;
+  return url.search.substring(1, url.search.length);
+}
+
+export function hashEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  const url = new URL('https://example.com');
+  url.hash = input;
+  return url.hash.substring(1, url.hash.length);
 }

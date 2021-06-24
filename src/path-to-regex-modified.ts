@@ -25,6 +25,10 @@ interface LexToken {
 const regexIdentifierStart = /[$_\p{ID_Start}]/u;
 const regexIdentifierPart = /[$_\u200C\u200D\p{ID_Continue}]/u;
 
+function isASCII(str: string, extended: boolean) {
+  return (extended ? /^[\x00-\xFF]*$/ : /^[\x00-\x7F]*$/).test(str);
+}
+
 /**
  * Tokenize input string.
  */
@@ -104,6 +108,11 @@ export function lexer(str: string, lenient: boolean = false): LexToken[] {
       }
 
       while (j < str.length) {
+        if (!isASCII(str[j], false)) {
+          ErrorOrInvalid(`Invalid character '${str[j]}' at ${j}.`);
+          continue;
+        }
+
         if (str[j] === "\\") {
           pattern += str[j++] + str[j++];
           continue;
