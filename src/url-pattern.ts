@@ -53,11 +53,11 @@ const PATHNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
   strict: true,
 };
 
-function extractValues(url: string): URLPatternInit {
+function extractValues(url: string, baseURL?: string): URLPatternInit {
   if (typeof url !== "string") {
     throw new TypeError(`parameter 1 is not of type 'string'.`);
   }
-  const o = new URL(url); // May throw.
+  const o = new URL(url, baseURL); // May throw.
   return {
     protocol: o.protocol.substring(0, o.protocol.length - 1),
     username: o.username,
@@ -292,7 +292,7 @@ export class URLPattern {
     }
   }
 
-  test(input: string) {
+  test(input: string | URLPatternInit, baseURL?: string) {
     let values: URLPatternInit = {};
 
     if (typeof input === 'undefined') {
@@ -301,9 +301,12 @@ export class URLPattern {
 
     try {
       if (typeof input === 'object') {
+        if (baseURL) {
+          return false;
+        }
         values = applyInit(values, input, false);
       } else {
-        values = applyInit(values, extractValues(input), false);
+        values = applyInit(values, extractValues(input, baseURL), false);
       }
     } catch (err) {
       // Treat exceptions simply as a failure to match.
@@ -330,7 +333,7 @@ export class URLPattern {
     return true;
   }
 
-  exec(input: string | URLPatternInit): URLPatternResult | null | undefined {
+  exec(input: string | URLPatternInit, baseURL?: string): URLPatternResult | null | undefined {
     let values = {} as URLPatternInit;
 
     if (typeof input === 'undefined') {
@@ -339,9 +342,12 @@ export class URLPattern {
 
     try {
       if (typeof input === 'object') {
+        if (baseURL) {
+          return null;
+        }
         values = applyInit(values, input, false);
       } else {
-        values = applyInit(values, extractValues(input), false);
+        values = applyInit(values, extractValues(input, baseURL), false);
       }
     } catch (err) {
       // Treat exceptions simply as a failure to match.
@@ -349,9 +355,12 @@ export class URLPattern {
       return null;
     }
 
-    let result: any = {
-      input: input,
-    };
+    let result: any = {};
+    if (baseURL) {
+      result.inputs = [input, baseURL];
+    } else {
+      result.inputs = [input];
+    }
 
     let component: URLPatternKeys;
     for (component in this.pattern) {
@@ -377,8 +386,6 @@ export class URLPattern {
           groups[key.name] = value || '';
         }
       }
-
-      if (!result) result = {};
 
       result[component] = {
         input: values[component] || '',
