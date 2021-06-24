@@ -15,10 +15,7 @@ import {
 
 // The default wildcard pattern used for a component when the constructor
 // input does not provide an explicit value.
-const DEFAULT_PATTERN = '(.*)';
-
-// The default wildcard pattern for the pathname component.
-const DEFAULT_PATHNAME_PATTERN = '/(.*)';
+const DEFAULT_PATTERN = '*';
 
 // default to strict mode and case sensitivity.  In addition, most
 // components have no concept of a delimiter or prefix character.
@@ -271,7 +268,7 @@ export class URLPattern {
       }
 
       const defaults = {
-        pathname: DEFAULT_PATHNAME_PATTERN,
+        pathname: DEFAULT_PATTERN,
         protocol: DEFAULT_PATTERN,
         username: DEFAULT_PATTERN,
         password: DEFAULT_PATTERN,
@@ -344,8 +341,7 @@ export class URLPattern {
 
     let component:URLPatternKeys
     for (component in this.pattern) {
-      const fallback = component == 'pathname' ? '/' : '';
-      if (!this.regexp[component].exec(values[component] || fallback)) {
+      if (!this.regexp[component].exec(values[component] || '')) {
         return false;
       }
     }
@@ -393,8 +389,7 @@ export class URLPattern {
 
     let component: URLPatternKeys;
     for (component in this.pattern) {
-      const fallback = component == 'pathname' ? '/' : '';
-      let match = this.regexp[component].exec(values[component] || fallback);
+      let match = this.regexp[component].exec(values[component] || '');
       if (!match) {
         return null;
       }
