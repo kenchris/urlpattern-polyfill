@@ -10,7 +10,6 @@ import {
   canonicalizeProtocol,
   canonicalizeSearch,
   canonicalizeUsername,
-  defaultPortForProtocol,
   isAbsolutePathname,
 } from './url-utils';
 
@@ -99,13 +98,27 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
 
   // Apply the URLPatternInit component values on top of the default and
   // baseURL values.
-  if (init.protocol) o.protocol = canonicalizeProtocol(init.protocol, isPattern);
-  if (init.username) o.username = canonicalizeUsername(init.username, isPattern);
-  if (init.password) o.password = canonicalizePassword(init.password, isPattern);
-  if (init.hostname) o.hostname = canonicalizeHostname(init.hostname, isPattern);
-  if (init.port) o.port = canonicalizePort(init.port, isPattern);
+  if (typeof init.protocol === 'string') {
+    o.protocol = canonicalizeProtocol(init.protocol, isPattern);
+  }
 
-  if (init.pathname) {
+  if (typeof init.username === 'string') {
+    o.username = canonicalizeUsername(init.username, isPattern);
+  }
+
+  if (typeof init.password === 'string') {
+    o.password = canonicalizePassword(init.password, isPattern);
+  }
+
+  if (typeof init.hostname === 'string') {
+    o.hostname = canonicalizeHostname(init.hostname, isPattern);
+  }
+
+  if (typeof init.port === 'string') {
+    o.port = canonicalizePort(init.port, o.protocol, isPattern);
+  }
+
+  if (typeof init.pathname === 'string') {
     o.pathname = init.pathname;
     if (baseURL && !isAbsolutePathname(o.pathname, isPattern)) {
       // Find the last slash in the baseURL pathname.  Since the URL is
@@ -122,8 +135,14 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
     }
     o.pathname = canonicalizePathname(o.pathname, isPattern);
   }
-  if (init.search) o.search = canonicalizeSearch(init.search, isPattern);
-  if (init.hash) o.hash = canonicalizeHash(init.hash, isPattern);
+
+  if (typeof init.search === 'string') {
+    o.search = canonicalizeSearch(init.search, isPattern);
+  }
+
+  if (typeof init.hash === 'string') {
+    o.hash = canonicalizeHash(init.hash, isPattern);
+  }
 
   return o;
 }
@@ -293,7 +312,16 @@ export class URLPattern {
   }
 
   test(input: string | URLPatternInit, baseURL?: string) {
-    let values: URLPatternInit = {};
+    let values: URLPatternInit = {
+      pathname: '',
+      protocol: '',
+      username: '',
+      password: '',
+      hostname: '',
+      port: '',
+      search: '',
+      hash: '',
+    };
 
     if (typeof input === 'undefined') {
       return false;
@@ -316,16 +344,8 @@ export class URLPattern {
 
     let component:URLPatternKeys
     for (component in this.pattern) {
-      let match;
-      let portMatchFix = component == 'port' && values.protocol && values.port === defaultPortForProtocol(values.protocol);
-      if (portMatchFix) {
-        match = this.regexp[component].exec('');
-      } else {
-        const fallback = component == 'pathname' ? '/' : '';
-        match = this.regexp[component].exec(values[component] || fallback);
-      }
-
-      if (!match) {
+      const fallback = component == 'pathname' ? '/' : '';
+      if (!this.regexp[component].exec(values[component] || fallback)) {
         return false;
       }
     }
@@ -334,7 +354,16 @@ export class URLPattern {
   }
 
   exec(input: string | URLPatternInit, baseURL?: string): URLPatternResult | null | undefined {
-    let values = {} as URLPatternInit;
+    let values: URLPatternInit = {
+      pathname: '',
+      protocol: '',
+      username: '',
+      password: '',
+      hostname: '',
+      port: '',
+      search: '',
+      hash: '',
+    };
 
     if (typeof input === 'undefined') {
       return;
@@ -364,22 +393,13 @@ export class URLPattern {
 
     let component: URLPatternKeys;
     for (component in this.pattern) {
-      let match;
-      let portMatchFix = component == 'port' && values.protocol
-        && values.port === defaultPortForProtocol(values.protocol);
-
-      if (portMatchFix) {
-        match = this.regexp[component].exec('');
-      } else {
-        const fallback = component == 'pathname' ? '/' : '';
-        match = this.regexp[component].exec(values[component] || fallback);
-      }
-
-      let groups = {} as Array<string>;
+      const fallback = component == 'pathname' ? '/' : '';
+      let match = this.regexp[component].exec(values[component] || fallback);
       if (!match) {
         return null;
       }
 
+      let groups = {} as Array<string>;
       for (let [i, key] of this.keys[component].entries()) {
         if (typeof key.name === 'string' || typeof key.name === 'number') {
           let value = match[i + 1];
