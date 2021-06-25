@@ -139,7 +139,7 @@ for (let entry of data) {
             entry.exactly_empty_components.includes(component)) {
           expected = '';
         } else if (typeof entry.pattern[0] === 'object' &&
-                   entry.pattern[0][component]) {
+                   typeof entry.pattern[0][component] === 'string') {
           expected = entry.pattern[0][component];
         } else if (baseURL) {
           let base_value = baseURL[component];

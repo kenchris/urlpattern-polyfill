@@ -106,13 +106,19 @@ export function canonicalizePathname(pathname: string, isPattern: boolean) {
   return pathname;
 }
 
-export function canonicalizePort(port: string, isPattern: boolean): string {
+export function canonicalizePort(port: string, protocol: string | undefined, isPattern: boolean): string {
+  if (defaultPortForProtocol(protocol) === port) {
+    port = '';
+  }
+
   if (isPattern) {
     return validatePatternEncoding(port, "port");
   }
+
   // Since ports only consist of digits there should be no encoding needed.
   // Therefore we directly use the UTF8 encoding version of CanonicalizePort().
-  if (/^[0-9]*$/.test(port) && parseInt(port) <= 65535) {
+  if (port === '' ||
+      (/^[0-9]*$/.test(port) && parseInt(port) <= 65535)) {
     return port;
   }
   throw new TypeError(`Invalid port '${port}'.`);
@@ -128,7 +134,7 @@ export function canonicalizeProtocol(protocol: string, isPattern: boolean) {
   throw new TypeError(`Invalid protocol '${protocol}'.`);
 }
 
-export function defaultPortForProtocol(protocol: string): string {
+export function defaultPortForProtocol(protocol: string | undefined): string {
   switch (protocol) {
     case "ws":
     case "http":
