@@ -492,7 +492,7 @@ function escapeString(str: string) {
  * Get the flags for a regexp from the options.
  */
 function flags(options?: { sensitive?: boolean }) {
-  return options && options.sensitive ? "" : "i";
+  return options && options.sensitive ? "u" : "ui";
 }
 
 /**
