@@ -154,7 +154,7 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
         o.pathname = baseURL.pathname.substring(0, slashIndex + 1) + o.pathname;
       }
     }
-    o.pathname = canonicalizePathname(o.pathname, isPattern);
+    o.pathname = canonicalizePathname(o.pathname, o.protocol, isPattern);
   }
 
   if (typeof init.search === 'string') {
@@ -402,7 +402,7 @@ export class URLPattern {
 
     let component:URLPatternKeys
     for (component in this.pattern) {
-      if (!this.regexp[component].exec(values[component] || '')) {
+      if (!this.regexp[component].exec(values[component])) {
         return false;
       }
     }
@@ -450,7 +450,7 @@ export class URLPattern {
 
     let component: URLPatternKeys;
     for (component in this.pattern) {
-      let match = this.regexp[component].exec(values[component] || '');
+      let match = this.regexp[component].exec(values[component]);
       if (!match) {
         return null;
       }

@@ -31,19 +31,20 @@ export function isAbsolutePathname(pathname: string, isPattern: boolean): boolea
   return false;
 }
 
+const SPECIAL_SCHEMES = [
+  'ftp',
+  'file',
+  'http',
+  'https',
+  'ws',
+  'wss',
+];
+
 export function isSpecialScheme(protocol_regexp: any) {
   if (!protocol_regexp) {
     return true;
   }
-  const specialSchemes = [
-    'ftp',
-    'file',
-    'http',
-    'https',
-    'ws',
-    'wss',
-  ];
-  for (const scheme of specialSchemes) {
+  for (const scheme of SPECIAL_SCHEMES) {
     if (protocol_regexp.test(scheme)) {
       return true;
     }
@@ -96,9 +97,15 @@ export function canonicalizeUsername(username: string, isPattern: boolean) {
   return url.username;
 }
 
-export function canonicalizePathname(pathname: string, isPattern: boolean) {
+export function canonicalizePathname(pathname: string, protocol: string | undefined,
+                                     isPattern: boolean) {
   if (isPattern || pathname === '') {
     return pathname;
+  }
+
+  if (protocol && !SPECIAL_SCHEMES.includes(protocol)) {
+    const url = new URL(`${protocol}:${pathname}`);
+    return url.pathname;
   }
 
   const leadingSlash = pathname[0] == "/";
@@ -208,8 +215,7 @@ export function pathURLPathnameEncodeCallback(input: string): string {
   if (input === '') {
     return input;
   }
-  const url = new URL('data:example');
-  url.pathname = input;
+  const url = new URL(`data:${input}`);
   return url.pathname;
 }
 
