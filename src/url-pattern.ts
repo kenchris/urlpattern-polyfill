@@ -285,7 +285,10 @@ export class URLPattern {
             throw new TypeError(`'baseURL' parameter is not of type 'string'.`);
           }
         }
+      } else if (baseURL) {
+        throw new TypeError(`parameter 1 is not of type 'string'.`);
       }
+
       // no or invalid arguments
       if (!init || typeof init !== 'object') {
         throw new TypeError(`parameter 1 is not of type 'string' and cannot convert to dictionary.`);
@@ -381,15 +384,16 @@ export class URLPattern {
       hash: '',
     };
 
+    if (typeof(input) !== 'string' && baseURL) {
+      throw new TypeError(`parameter 1 is not of type 'string'.`);
+    }
+
     if (typeof input === 'undefined') {
       return false;
     }
 
     try {
       if (typeof input === 'object') {
-        if (baseURL) {
-          return false;
-        }
         values = applyInit(values, input, false);
       } else {
         values = applyInit(values, extractValues(input, baseURL), false);
@@ -422,15 +426,16 @@ export class URLPattern {
       hash: '',
     };
 
+    if (typeof(input) !== 'string' && baseURL) {
+      throw new TypeError(`parameter 1 is not of type 'string'.`);
+    }
+
     if (typeof input === 'undefined') {
       return;
     }
 
     try {
       if (typeof input === 'object') {
-        if (baseURL) {
-          return null;
-        }
         values = applyInit(values, input, false);
       } else {
         values = applyInit(values, extractValues(input, baseURL), false);
