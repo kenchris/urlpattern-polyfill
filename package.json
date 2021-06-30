@@ -6,8 +6,9 @@
     "type": "git",
     "url": "https://github.com/kenchris/urlpattern-polyfill"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "unpkg": "./dist/index.umd.js",
   "files": [
     "src",
     "dist"
@@ -15,18 +16,15 @@
   "devDependencies": {
     "ava": "^3.14.0",
     "esm": "^3.2.25",
+    "microbundle": "^0.13.3",
     "rimraf": "^3.0.2",
-    "rollup": "^2.35.1",
-    "rollup-plugin-filesize": "^9.1.0",
-    "rollup-plugin-terser": "^5.2.0",
-    "typescript": "^4.1.3"
+    "rollup": "^2.35.1"
   },
   "scripts": {
-    "build": "rimraf dist/ && tsc",
-    "build:watch": "tsc --watch",
+    "build": "rimraf dist/ && microbundle",
+    "build:watch": "microbundle watch",
     "test": "npm run build && ava --fail-fast -s",
     "quicktest": "ava --fail-fast -s",
-    "checksize": "rollup -c ; cat urlpattern-polyfill.bundled.js | gzip -9 | wc -c ; rm urlpattern-polyfill.bundled.js",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
   },
   "ava": {
