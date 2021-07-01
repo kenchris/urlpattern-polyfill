@@ -1,7 +1,9 @@
-import {parseShorthand} from './parseShorthand';
 import {ParseOptions, parse, Token, tokensToRegexp, TokensToRegexpOptions} from './path-to-regex-modified';
 import {URLPatternResult, URLPatternInit, URLPatternKeys} from './url-pattern.interfaces';
 import {
+  DEFAULT_OPTIONS,
+  HOSTNAME_OPTIONS,
+  PATHNAME_OPTIONS,
   canonicalizeHash,
   canonicalizeHostname,
   canonicalizePassword,
@@ -23,6 +25,7 @@ import {
   searchEncodeCallback,
   hashEncodeCallback,
 } from './url-utils';
+import {Parser} from './url-pattern-parser';
 
 // Define the components in a URL.  The ordering of this constant list is
 // signficant to the implementation below.
@@ -40,38 +43,6 @@ const COMPONENTS: URLPatternKeys[]= [
 // The default wildcard pattern used for a component when the constructor
 // input does not provide an explicit value.
 const DEFAULT_PATTERN = '*';
-
-// default to strict mode and case sensitivity.  In addition, most
-// components have no concept of a delimiter or prefix character.
-const DEFAULT_OPTIONS: TokensToRegexpOptions & ParseOptions = {
-  delimiter: '',
-  prefixes: '',
-  sensitive: true,
-  strict: true,
-};
-
-// The options to use for hostname patterns.  This uses a
-// "." delimiter controlling how far a named group like ":bar" will match
-// by default.  Note, hostnames are case insensitive but we require case
-// sensitivity here.  This assumes that the hostname values have already
-// been normalized to lower case as in URL().
-const HOSTNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
-  delimiter: '.',
-  prefixes: '',
-  sensitive: true,
-  strict: true,
-};
-
-// The options to use for pathname patterns.  This uses a
-// "/" delimiter controlling how far a named group like ":bar" will match
-// by default.  It also configures "/" to be treated as an automatic
-// prefix before groups.
-const PATHNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
-  delimiter: '/',
-  prefixes: '/',
-  sensitive: true,
-  strict: true,
-};
 
 function extractValues(url: string, baseURL?: string): URLPatternInit {
   if (typeof url !== "string") {
@@ -277,13 +248,17 @@ export class URLPattern {
     try {
       // shorthand
       if (typeof init === 'string') {
-        init = parseShorthand(init);
+        const parser = new Parser(init);
+        parser.parse();
+        init = parser.result;
         if (baseURL) {
           if (typeof baseURL === 'string') {
             init.baseURL = baseURL;
           } else {
             throw new TypeError(`'baseURL' parameter is not of type 'string'.`);
           }
+        } else if (typeof init.protocol !== 'string') {
+          throw new TypeError(`A base URL must be provided for a relative constructor string.`);
         }
       } else if (baseURL) {
         throw new TypeError(`parameter 1 is not of type 'string'.`);
