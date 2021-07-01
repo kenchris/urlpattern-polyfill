@@ -1,3 +1,37 @@
+import {ParseOptions, TokensToRegexpOptions} from './path-to-regex-modified';
+
+// default to strict mode and case sensitivity.  In addition, most
+// components have no concept of a delimiter or prefix character.
+export const DEFAULT_OPTIONS: TokensToRegexpOptions & ParseOptions = {
+  delimiter: '',
+  prefixes: '',
+  sensitive: true,
+  strict: true,
+};
+
+// The options to use for hostname patterns.  This uses a
+// "." delimiter controlling how far a named group like ":bar" will match
+// by default.  Note, hostnames are case insensitive but we require case
+// sensitivity here.  This assumes that the hostname values have already
+// been normalized to lower case as in URL().
+export const HOSTNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
+  delimiter: '.',
+  prefixes: '',
+  sensitive: true,
+  strict: true,
+};
+
+// The options to use for pathname patterns.  This uses a
+// "/" delimiter controlling how far a named group like ":bar" will match
+// by default.  It also configures "/" to be treated as an automatic
+// prefix before groups.
+export const PATHNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
+  delimiter: '/',
+  prefixes: '/',
+  sensitive: true,
+  strict: true,
+};
+
 // Utility function to determine if a pathname is absolute or not.  For
 // URL values this mainly consists of a check for a leading slash.  For
 // patterns we do some additional checking for escaped or grouped slashes.
@@ -31,7 +65,7 @@ export function isAbsolutePathname(pathname: string, isPattern: boolean): boolea
   return false;
 }
 
-const SPECIAL_SCHEMES = [
+export const SPECIAL_SCHEMES = [
   'ftp',
   'file',
   'http',
