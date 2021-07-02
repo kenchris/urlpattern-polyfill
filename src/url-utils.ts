@@ -108,9 +108,7 @@ export function canonicalizeHostname(hostname: string, isPattern: boolean) {
   if (isPattern || hostname === '') {
     return hostname;
   }
-  const url = new URL("https://example.com");
-  url.hostname = hostname;
-  return url.hostname;
+  return hostnameEncodeCallback(hostname);
 }
 
 export function canonicalizePassword(password: string, isPattern: boolean) {
@@ -216,6 +214,9 @@ export function passwordEncodeCallback(input: string): string {
 export function hostnameEncodeCallback(input: string): string {
   if (input === '') {
     return input;
+  }
+  if (/[#%/:<>?@[\]\\|]/g.test(input)) {
+    throw(new TypeError(`Invalid hostname '${input}'`));
   }
   const url = new URL('https://example.com');
   url.hostname = input;
