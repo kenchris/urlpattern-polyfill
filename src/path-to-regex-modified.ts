@@ -101,6 +101,7 @@ export function lexer(str: string, lenient: boolean = false): LexToken[] {
       let count = 1;
       let pattern = "";
       let j = i + 1;
+      let error = false;
 
       if (str[j] === "?") {
         ErrorOrInvalid(`Pattern cannot start with "?" at ${j}`);
@@ -110,7 +111,8 @@ export function lexer(str: string, lenient: boolean = false): LexToken[] {
       while (j < str.length) {
         if (!isASCII(str[j], false)) {
           ErrorOrInvalid(`Invalid character '${str[j]}' at ${j}.`);
-          continue;
+          error = true;
+          break;
         }
 
         if (str[j] === "\\") {
@@ -128,12 +130,16 @@ export function lexer(str: string, lenient: boolean = false): LexToken[] {
           count++;
           if (str[j + 1] !== "?") {
             ErrorOrInvalid(`Capturing groups are not allowed at ${j}`);
-            continue;
+            error = true;
+            break;
           }
         }
 
         pattern += str[j++];
       }
+
+      if (error)
+        continue;
 
       if (count) {
         ErrorOrInvalid(`Unbalanced pattern at ${i}`);
