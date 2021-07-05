@@ -65,6 +65,20 @@ export function isAbsolutePathname(pathname: string, isPattern: boolean): boolea
   return false;
 }
 
+function maybeStripPrefix(value: string, prefix: string): string {
+  if (value.startsWith(prefix)) {
+    return value.substring(prefix.length, value.length);
+  }
+  return value;
+}
+
+function maybeStripSuffix(value: string, suffix: string): string {
+  if (value.endsWith(suffix)) {
+    return value.substr(0, value.length - suffix.length);
+  }
+  return value;
+}
+
 export const SPECIAL_SCHEMES = [
   'ftp',
   'file',
@@ -87,6 +101,7 @@ export function isSpecialScheme(protocol_regexp: any) {
 }
 
 export function canonicalizeHash(hash: string, isPattern: boolean) {
+  hash = maybeStripPrefix(hash, '#');
   if (isPattern || hash === '') {
     return hash;
   }
@@ -96,6 +111,7 @@ export function canonicalizeHash(hash: string, isPattern: boolean) {
 }
 
 export function canonicalizeSearch(search: string, isPattern: boolean) {
+  search = maybeStripPrefix(search, '?');
   if (isPattern || search === '') {
     return search;
   }
@@ -162,6 +178,8 @@ export function canonicalizePort(port: string, protocol: string | undefined, isP
 }
 
 export function canonicalizeProtocol(protocol: string, isPattern: boolean) {
+  protocol = maybeStripSuffix(protocol, ':');
+
   if (isPattern || protocol === '') {
     return protocol;
   }
