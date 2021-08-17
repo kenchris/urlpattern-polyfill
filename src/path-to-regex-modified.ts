@@ -138,8 +138,9 @@ export function lexer(str: string, lenient: boolean = false): LexToken[] {
         pattern += str[j++];
       }
 
-      if (error)
+      if (error) {
         continue;
+      }
 
       if (count) {
         ErrorOrInvalid(`Unbalanced pattern at ${i}`);
@@ -198,6 +199,7 @@ export function parse(str: string, options: ParseOptions = {}): Token[] {
   let key = 0;
   let i = 0;
   let path = "";
+  let nameSet = new Set();
 
   const tryConsume = (type: LexToken["type"]): string | undefined => {
     if (i < tokens.length && tokens[i].type === type) return tokens[i++].value;
@@ -255,8 +257,14 @@ export function parse(str: string, options: ParseOptions = {}): Token[] {
         path = "";
       }
 
+      const finalName = name || key++;
+      if (nameSet.has(finalName)) {
+        throw new TypeError(`Duplicate name '${finalName}'.`);
+      }
+      nameSet.add(finalName);
+
       result.push({
-        name: name || key++,
+        name: finalName,
         prefix: encodePart(prefix),
         suffix: "",
         pattern: pattern || defaultPattern,
@@ -271,11 +279,6 @@ export function parse(str: string, options: ParseOptions = {}): Token[] {
       continue;
     }
 
-    if (path) {
-      result.push(encodePart(path));
-      path = "";
-    }
-
     const open = tryConsume("OPEN");
     if (open) {
       const prefix = consumeText();
@@ -287,15 +290,31 @@ export function parse(str: string, options: ParseOptions = {}): Token[] {
       const suffix = consumeText();
 
       mustConsume("CLOSE");
+      const modifier = tryConsumeModifier() || "";
+
+      if (!name && !pattern && !modifier) {
+        path += prefix;
+        continue;
+      }
+
+      if (path) {
+        result.push(encodePart(path));
+        path = "";
+      }
 
       result.push({
         name: name || (pattern ? key++ : ""),
         pattern: name && !pattern ? defaultPattern : pattern,
         prefix: encodePart(prefix),
         suffix: encodePart(suffix),
-        modifier: tryConsumeModifier() || "",
+        modifier: modifier,
       });
       continue;
+    }
+
+    if (path) {
+      result.push(encodePart(path));
+      path = "";
     }
 
     mustConsume("END");
