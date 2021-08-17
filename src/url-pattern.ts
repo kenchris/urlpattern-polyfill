@@ -72,7 +72,7 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
   // to persist for these components past this phase since they should no
   // longer be treated as wildcards.
   let baseURL;
-  if (init.baseURL) {
+  if (typeof init.baseURL === 'string') {
     try {
       baseURL = new URL(init.baseURL);
       o.protocol = baseURL.protocol ? baseURL.protocol.substring(0, baseURL.protocol.length - 1) : '';
