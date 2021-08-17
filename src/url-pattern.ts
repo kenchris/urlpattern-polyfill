@@ -318,11 +318,13 @@ export class URLPattern {
             options.encodePart = portEncodeCallback;
             break;
           case 'pathname':
-            Object.assign(options, PATHNAME_OPTIONS);
-            if (isSpecialScheme(this.regexp.protocol))
+            if (isSpecialScheme(this.regexp.protocol)) {
+              Object.assign(options, PATHNAME_OPTIONS);
               options.encodePart = standardURLPathnameEncodeCallback;
-            else
+            } else {
+              Object.assign(options, DEFAULT_OPTIONS);
               options.encodePart = pathURLPathnameEncodeCallback;
+            }
             break;
           case 'search':
             Object.assign(options, DEFAULT_OPTIONS);
