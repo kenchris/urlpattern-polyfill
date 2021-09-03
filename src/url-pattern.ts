@@ -342,7 +342,7 @@ export class URLPattern {
           throw new TypeError(`invalid ${component} pattern '${this.pattern[component]}'.`);
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       throw new TypeError(`Failed to construct 'URLPattern': ${err.message}`);
     }
   }
@@ -373,7 +373,7 @@ export class URLPattern {
       } else {
         values = applyInit(values, extractValues(input, baseURL), false);
       }
-    } catch (err) {
+    } catch (err: any) {
       // Treat exceptions simply as a failure to match.
       console.error(err.message);
       return false;
@@ -415,7 +415,7 @@ export class URLPattern {
       } else {
         values = applyInit(values, extractValues(input, baseURL), false);
       }
-    } catch (err) {
+    } catch (err: any) {
       // Treat exceptions simply as a failure to match.
       console.error(err.message);
       return null;
