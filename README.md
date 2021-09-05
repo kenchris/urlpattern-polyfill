@@ -11,7 +11,7 @@ Basic example
 ---
 
 ```javascript
-let p = new URLPattern({ pathname: '/foo/:name });
+let p = new URLPattern({ pathname: '/foo/:name' });
 
 let r = p.exec('https://example.com/foo/bar');
 console.log(r.pathname.input); // "/foo/bar"
