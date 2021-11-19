@@ -377,7 +377,6 @@ export class URLPattern {
       }
     } catch (err) {
       // Treat exceptions simply as a failure to match.
-      console.error(err.message);
       return false;
     }
 
@@ -419,7 +418,6 @@ export class URLPattern {
       }
     } catch (err) {
       // Treat exceptions simply as a failure to match.
-      console.error(err.message);
       return null;
     }
 
