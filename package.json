@@ -11,6 +11,7 @@
   "unpkg": "./dist/index.umd.js",
   "types": "./dist/index.d.ts",
   "exports": "./dist/index.js",
+  "type": "module",
   "files": [
     "src",
     "dist"
