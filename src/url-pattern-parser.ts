@@ -60,6 +60,9 @@ export class Parser {
   // The current nest depth of `{ }` pattern groupings.
   private groupDepth: number = 0;
 
+  // The current nesting depth of `[ ]` in hostname patterns.
+  private hostnameIPv6BracketDepth: number = 0;
+
   // True if we should apply parse rules as if this is a "standard" URL.  If
   // false then this is treated as a "not a base URL".
   private shouldTreatAsStandardURL: boolean = false;
@@ -242,8 +245,16 @@ export class Parser {
           break;
 
         case State.HOSTNAME:
+          // Track whether we are inside ipv6 address brackets.
+          if (this.isIPv6Open()) {
+            this.hostnameIPv6BracketDepth += 1;
+          } else if (this.isIPv6Close()) {
+            this.hostnameIPv6BracketDepth -= 1;
+          }
+
           // If we find a `:` then we transition to the port component state.
-          if (this.isPortPrefix()) {
+          // However, we ignore `:` when parsing an ipv6 address.
+          if (this.isPortPrefix() && !this.hostnameIPv6BracketDepth) {
             this.changeState(State.PORT, /*skip=*/1);
           }
 
@@ -466,6 +477,14 @@ export class Parser {
 
   private isGroupClose(): boolean {
     return this.tokenList[this.tokenIndex].type == 'CLOSE';
+  }
+
+  private isIPv6Open(): boolean {
+    return this.isNonSpecialPatternChar(this.tokenIndex, '[');
+  }
+
+  private isIPv6Close(): boolean {
+    return this.isNonSpecialPatternChar(this.tokenIndex, ']');
   }
 
   private makeComponentString(): string {
