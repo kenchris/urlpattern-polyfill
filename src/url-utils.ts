@@ -79,6 +79,23 @@ function maybeStripSuffix(value: string, suffix: string): string {
   return value;
 }
 
+export function treatAsIPv6Hostname(value: string | undefined): boolean {
+  if (!value || value.length < 2) {
+    return false;
+  }
+
+  if (value[0] === '[') {
+    return true;
+  }
+
+  if ((value[0] === '\\' || value[0] === '{') &&
+      value[1] === '[') {
+    return true;
+  }
+
+  return false;
+}
+
 export const SPECIAL_SCHEMES = [
   'ftp',
   'file',
@@ -124,7 +141,11 @@ export function canonicalizeHostname(hostname: string, isPattern: boolean) {
   if (isPattern || hostname === '') {
     return hostname;
   }
-  return hostnameEncodeCallback(hostname);
+  if (treatAsIPv6Hostname(hostname)) {
+    return ipv6HostnameEncodeCallback(hostname);
+  } else {
+    return hostnameEncodeCallback(hostname);
+  }
 }
 
 export function canonicalizePassword(password: string, isPattern: boolean) {
@@ -239,6 +260,16 @@ export function hostnameEncodeCallback(input: string): string {
   const url = new URL('https://example.com');
   url.hostname = input;
   return url.hostname;
+}
+
+export function ipv6HostnameEncodeCallback(input: string): string {
+  if (input === '') {
+    return input;
+  }
+  if (/[^0-9a-fA-F[\]:]/g.test(input)) {
+    throw(new TypeError(`Invalid IPv6 hostname '${input}'`));
+  }
+  return input.toLowerCase();
 }
 
 export function portEncodeCallback(input: string): string {

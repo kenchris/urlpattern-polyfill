@@ -13,12 +13,14 @@ import {
   canonicalizeSearch,
   canonicalizeUsername,
   defaultPortForProtocol,
+  treatAsIPv6Hostname,
   isAbsolutePathname,
   isSpecialScheme,
   protocolEncodeCallback,
   usernameEncodeCallback,
   passwordEncodeCallback,
   hostnameEncodeCallback,
+  ipv6HostnameEncodeCallback,
   portEncodeCallback,
   standardURLPathnameEncodeCallback,
   pathURLPathnameEncodeCallback,
@@ -311,7 +313,11 @@ export class URLPattern {
             break;
           case 'hostname':
             Object.assign(options, HOSTNAME_OPTIONS);
-            options.encodePart = hostnameEncodeCallback;
+            if (treatAsIPv6Hostname(pattern)) {
+              options.encodePart = ipv6HostnameEncodeCallback;
+            } else {
+              options.encodePart = hostnameEncodeCallback;
+            }
             break;
           case 'port':
             Object.assign(options, DEFAULT_OPTIONS);
