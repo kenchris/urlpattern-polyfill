@@ -154,8 +154,17 @@ function escapeRegexpString(value: string): string {
 // original parsed pattern, although they may differ due to canonicalization.
 function tokensToPattern(tokens: Token[],
                          options: TokensToRegexpOptions & ParseOptions): string {
+  const wildcardPattern = ".*";
+  const segmentWildcardPattern =
+      `[^${escapeRegexpString(options.delimiter || '/#?')}]+?`;
+  const regexIdentifierPart = /[$_\u200C\u200D\p{ID_Continue}]/u;
+
   let result = "";
-  for (const token of tokens) {
+  for (let i = 0; i < tokens.length; ++i) {
+    const token = tokens[i];
+    const lastToken = i > 0 ? tokens[i - 1] : null;
+    const nextToken: any = i < tokens.length - 1 ? tokens[i + 1] : null;
+
     // Plain text tokens can be directly added to the pattern string.
     if (typeof token === 'string') {
       result += escapePatternString(token);
@@ -175,17 +184,52 @@ function tokensToPattern(tokens: Token[],
       continue;
     }
 
-    // Determine if the token needs a grouping like `{ ... }`.  This is only
-    // necessary when using a non-automatic prefix or any suffix.
-    const optionsPrefixes = options.prefixes || "./";
-    const needsGrouping =
+    // Determine if the token name was custom or automatically assigned.
+    const customName = typeof token.name !== 'number';
+
+    // Determine if the token needs a grouping like `{ ... }`.  This is
+    // necessary when the group:
+    //
+    // 1. is using a non-automatic prefix or any suffix.
+    const optionsPrefixes = options.prefixes !== undefined ? options.prefixes
+                                                           : "./";
+    let needsGrouping =
       token.suffix !== "" ||
       (token.prefix !== "" &&
        (token.prefix.length !== 1 ||
         !optionsPrefixes.includes(token.prefix)));
 
-    // Determine if the token name was custom or automatically assigned.
-    const customName = typeof token.name !== 'number';
+    // 2. following by a matching group that may be expressed in a way that can
+    //    be mistakenly interpreted as part of the matching group.  For
+    //    example:
+    //
+    //    a. An `(...)` expression following a `:foo` group.  We want to output
+    //       `{:foo}(...)` and not `:foo(...)`.
+    //    b. A plain text expression following a `:foo` group where the text
+    //       could be mistakenly interpreted as part of the name.  We want to
+    //       output `{:foo}bar` and not `:foobar`.
+    if (!needsGrouping && token.prefix === "" && customName &&
+        token.pattern === segmentWildcardPattern &&
+        token.modifier === "" && nextToken && !nextToken.prefix &&
+        !nextToken.suffix) {
+      if (typeof nextToken === "string") {
+        const code = nextToken.length > 0 ? nextToken[0] : "";
+        needsGrouping = regexIdentifierPart.test(code);
+      } else {
+        needsGrouping = typeof nextToken.name === "number";
+      }
+    }
+
+    // 3. preceded by a fixed text part that ends with an implicit prefix
+    //    character (like `/`).  This occurs when the original pattern used
+    //    an escape or grouping to prevent the implicit prefix; e.g.
+    //    `\\/*` or `/{*}`.  In these cases we use a grouping to prevent the
+    //    implicit prefix in the generated string.
+    if (!needsGrouping && token.prefix === "" && lastToken &&
+        typeof lastToken === "string" && lastToken.length > 0) {
+      const code = lastToken[lastToken.length - 1];
+      needsGrouping = optionsPrefixes.includes(code);
+    }
 
     // This is a full featured token.  We must generate a string that looks
     // like:
@@ -204,15 +248,20 @@ function tokensToPattern(tokens: Token[],
       result += `:${token.name}`;
     }
 
-    const wildcardPattern = ".*";
-    const segmentWildcardPattern =
-        `[^${escapeRegexpString(options.delimiter || '/#?')}]+?`;
-
     if (token.pattern === wildcardPattern) {
-      // We can only use the `*` wildcard card if the automatic
-      // numeric name is used for the group.  A custom name
-      // requires the regexp `(.*)` explicitly.
-      if (!customName) {
+      // We can only use the `*` wildcard card if we meet a number of
+      // conditions.  We must use an explicit `(.*)` group if:
+      //
+      // 1. A custom name was used; e.g. `:foo(.*)`.
+      // 2. If the preceding group is a matching group without a modifier; e.g.
+      //    `(foo)(.*)`.  In that case we cannot emit the `*` shorthand without
+      //    it being mistakenly interpreted as the modifier for the previous
+      //    group.
+      if (!customName && (!lastToken ||
+                          typeof lastToken === 'string' ||
+                          lastToken.modifier ||
+                          needsGrouping ||
+                          token.prefix !== "")) {
         result += '*';
       } else {
         result += `(${wildcardPattern})`;
@@ -226,6 +275,18 @@ function tokensToPattern(tokens: Token[],
       }
     } else {
       result += `(${token.pattern})`;
+    }
+
+    // If the matching group is a simple `:foo` custom name with the default
+    // segment wildcard, then we must check for a trailing suffix that could
+    // be interpreted as a trailing part of the name itself.  In these cases
+    // we must escape the beginning of the suffix in order to separate it
+    // from the end of the custom name; e.g. `:foo\\bar` instead of `:foobar`.
+    if (token.pattern === segmentWildcardPattern && customName &&
+        token.suffix !== "") {
+      if (regexIdentifierPart.test(token.suffix[0])) {
+        result += '\\';
+      }
     }
 
     result += escapePatternString(token.suffix);
