@@ -2296,6 +2296,74 @@
     }
   },
   {
+    "pattern": [{ "hostname": "bad hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad#hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad%hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad/hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad\\:hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad<hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad>hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad?hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad@hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad[hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad]hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad\\\\hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad^hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad|hostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad\nhostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad\rhostname" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": [{ "hostname": "bad\thostname" }],
+    "expected_obj": "error"
+  },
+  {
     "pattern": [{}],
     "inputs": ["https://example.com/"],
     "expected_match": {

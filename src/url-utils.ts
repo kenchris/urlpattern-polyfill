@@ -254,7 +254,7 @@ export function hostnameEncodeCallback(input: string): string {
   if (input === '') {
     return input;
   }
-  if (/[#%/:<>?@[\]\\|]/g.test(input)) {
+  if (/[\t\n\r #%/:<>?@[\]^\\|]/g.test(input)) {
     throw(new TypeError(`Invalid hostname '${input}'`));
   }
   const url = new URL('https://example.com');
