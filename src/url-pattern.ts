@@ -246,7 +246,7 @@ export class URLPattern {
   private keys: any = {};
   private component_pattern: any = {};
 
-  constructor(init: URLPatternInit | string, baseURL?: string) {
+  constructor(init: URLPatternInit | string = {}, baseURL?: string) {
     try {
       // shorthand
       if (typeof init === 'string') {
@@ -355,7 +355,7 @@ export class URLPattern {
     }
   }
 
-  test(input: string | URLPatternInit, baseURL?: string) {
+  test(input: string | URLPatternInit = {}, baseURL?: string) {
     let values: URLPatternInit = {
       pathname: '',
       protocol: '',
@@ -396,7 +396,7 @@ export class URLPattern {
     return true;
   }
 
-  exec(input: string | URLPatternInit, baseURL?: string): URLPatternResult | null | undefined {
+  exec(input: string | URLPatternInit = {}, baseURL?: string): URLPatternResult | null | undefined {
     let values: URLPatternInit = {
       pathname: '',
       protocol: '',
