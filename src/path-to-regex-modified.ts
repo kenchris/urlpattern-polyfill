@@ -297,6 +297,10 @@ export function parse(str: string, options: ParseOptions = {}): Token[] {
         continue;
       }
 
+      if (!name && !pattern && !prefix) {
+        continue;
+      }
+
       if (path) {
         result.push(encodePart(path));
         path = "";
