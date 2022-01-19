@@ -178,9 +178,10 @@ export function canonicalizePathname(pathname: string, protocol: string | undefi
   }
 
   const leadingSlash = pathname[0] == "/";
-  pathname = new URL(pathname, "https://example.com").pathname;
+  pathname = new URL(!leadingSlash ? '/-' + pathname : pathname,
+                     "https://example.com").pathname;
   if (!leadingSlash) {
-    pathname = pathname.substring(1, pathname.length);
+    pathname = pathname.substring(2, pathname.length);
   }
 
   return pathname;
@@ -289,9 +290,10 @@ export function standardURLPathnameEncodeCallback(input: string): string {
     return input;
   }
   const url = new URL('https://example.com');
-  url.pathname = input;
-  if (input[0] !== '/')
-    return url.pathname.substring(1, url.pathname.length);
+  url.pathname = input[0] !== '/' ? '/-' + input : input;
+  if (input[0] !== '/') {
+    return url.pathname.substring(2, url.pathname.length);
+  }
   return url.pathname;
 }
 
