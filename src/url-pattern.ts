@@ -208,7 +208,7 @@ function tokensToPattern(tokens: Token[],
     //    b. A plain text expression following a `:foo` group where the text
     //       could be mistakenly interpreted as part of the name.  We want to
     //       output `{:foo}bar` and not `:foobar`.
-    if (!needsGrouping && token.prefix === "" && customName &&
+    if (!needsGrouping && customName &&
         token.pattern === segmentWildcardPattern &&
         token.modifier === "" && nextToken && !nextToken.prefix &&
         !nextToken.suffix) {
