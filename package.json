@@ -6,12 +6,17 @@
     "type": "git",
     "url": "https://github.com/kenchris/urlpattern-polyfill"
   },
-  "main": "./dist/index.umd.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "unpkg": "./dist/index.umd.js",
   "types": "./dist/index.d.ts",
-  "exports": "./dist/index.js",
-  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "node": "./dist/index.cjs",
+      "browser": "./dist/index.umd.js"
+    }
+  },
   "files": [
     "src",
     "dist"
