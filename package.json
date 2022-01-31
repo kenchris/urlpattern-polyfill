@@ -13,8 +13,9 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "node": "./dist/index.cjs",
-      "browser": "./dist/index.umd.js"
+      "require": "./dist/index.cjs",
+      "browser": "./dist/index.umd.js",
+      "types": "./dist/index.d.ts"
     }
   },
   "files": [
