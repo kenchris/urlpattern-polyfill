@@ -506,7 +506,7 @@ export class URLPattern {
       for (let [i, key] of this.keys[component].entries()) {
         if (typeof key.name === 'string' || typeof key.name === 'number') {
           let value = match[i + 1];
-          groups[key.name] = value || '';
+          groups[key.name] = value;
         }
       }
 

@@ -225,6 +225,15 @@ for (let entry of data) {
           expected_obj.groups['0'] = '';
         }
       }
+
+      // JSON does not allow us to use undefined directly, so the data file
+      // contains null instead.  Translate to the expected undefined value
+      // here.
+      for (const key in expected_obj.groups) {
+        if (expected_obj.groups[key] === null) {
+          expected_obj.groups[key] = undefined;
+        }
+      }
       t.deepEqual(exec_result[component], expected_obj, `exec() result for ${component}`);
     }
   });
