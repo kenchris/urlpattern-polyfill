@@ -6,26 +6,25 @@
     "type": "git",
     "url": "https://github.com/kenchris/urlpattern-polyfill"
   },
-  "main": "./dist/index.umd.js",
-  "module": "./dist/index.js",
-  "unpkg": "./dist/index.umd.js",
-  "types": "./dist/index.d.ts",
-  "exports": "./dist/index.js",
-  "type": "module",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
   "files": [
-    "src",
     "dist"
   ],
   "devDependencies": {
-    "ava": "^3.14.0",
-    "esm": "^3.2.25",
-    "microbundle": "^0.13.3",
-    "rimraf": "^3.0.2",
-    "rollup": "^2.35.1"
+    "ava": "3",
+    "esm": "latest",
+    "rimraf": "latest",
+    "tsup": "latest"
   },
   "scripts": {
-    "build": "rimraf dist/ && microbundle",
-    "build:watch": "microbundle watch",
+    "build:esm": "tsup src/index.ts --format esm",
+    "build:cjs": "tsup src/index.ts --format cjs",
+    "build:types": "cp src/index.d.ts dist/index.d.ts",
+    "build": "rimraf dist/ && npm run build:esm && npm run build:types && npm run build:cjs",
     "test": "npm run build && ava --fail-fast -s",
     "quicktest": "ava --fail-fast -s",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
