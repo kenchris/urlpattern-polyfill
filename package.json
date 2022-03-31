@@ -6,28 +6,27 @@
     "type": "git",
     "url": "https://github.com/kenchris/urlpattern-polyfill"
   },
-  "main": "./dist/index.umd.js",
-  "module": "./dist/index.js",
-  "unpkg": "./dist/index.umd.js",
-  "types": "./dist/index.d.ts",
-  "exports": "./dist/index.js",
-  "type": "module",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs",
+    "types": "./dist/index.d.ts"
+  },
   "files": [
-    "src",
     "dist"
   ],
+  "type": "module",
   "devDependencies": {
     "ava": "^3.14.0",
     "esm": "^3.2.25",
-    "microbundle": "^0.13.3",
     "rimraf": "^3.0.2",
-    "rollup": "^2.35.1"
+    "tsup": "^5.12.1",
+    "typescript": "^4.6.3"
   },
   "scripts": {
-    "build": "rimraf dist/ && microbundle",
-    "build:watch": "microbundle watch",
-    "test": "npm run build && ava --fail-fast -s",
-    "quicktest": "ava --fail-fast -s",
+    "prebuild": "rimraf dist",
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "pretest": "npm run build",
+    "test": "ava --fail-fast -s",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
   },
   "ava": {

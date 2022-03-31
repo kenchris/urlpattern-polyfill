@@ -1,7 +1,12 @@
 import test from 'ava';
-import {readFileSync} from 'fs';
-import {URLPattern} from './dist/index.js';
+import { readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+import { URLPattern } from '../dist/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const baseURL = 'https://example.com';
 
 const kComponents = [
@@ -88,7 +93,8 @@ test('JavaScript URL routing 2/2', t => {
 });
 */
 
-let rawdata = readFileSync('urlpatterntestdata.json');
+
+let rawdata = readFileSync(path.resolve(__dirname, 'urlpatterntestdata.json'));
 let data = JSON.parse(rawdata);
 let i = 0;
 
