@@ -1,11 +1,12 @@
 {
   "name": "urlpattern-polyfill",
-  "version": "1.0.0-rc5",
-  "description": "Polyfill for the proposed URLPattern API",
+  "version": "2.0.0",
+  "description": "Polyfill for the URLPattern API",
   "repository": {
     "type": "git",
     "url": "https://github.com/kenchris/urlpattern-polyfill"
   },
+  "type": "module",
   "exports": {
     "import": "./dist/index.js",
     "require": "./dist/index.cjs",
@@ -14,7 +15,6 @@
   "files": [
     "dist"
   ],
-  "type": "module",
   "devDependencies": {
     "ava": "^3.14.0",
     "esm": "^3.2.25",
