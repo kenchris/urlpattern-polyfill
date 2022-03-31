@@ -7,14 +7,14 @@ export declare class URLPattern {
 
   exec(input?: URLPatternInput, baseURL?: string): URLPatternResult | null;
 
-  get protocol(): string;
-  get username(): string;
-  get password(): string;
-  get hostname(): string;
-  get port(): string;
-  get pathname(): string;
-  get search(): string;
-  get hash(): string;
+  readonly protocol: string;
+  readonly username: string;
+  readonly password: string;
+  readonly hostname: string;
+  readonly port: string;
+  readonly pathname: string;
+  readonly search: string;
+  readonly hash: string;
 }
 
 export interface URLPatternInit {

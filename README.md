@@ -10,19 +10,7 @@ How to load the polyfill
 ---
 The polyfill works in browsers (ESM module) and in Node.js either via import (ESM module) or via require (CJS module).
 
-```javascript
-// CJS module loading (Node.js)
-const { URLPattern } = require("urlpattern-polyfill");
-
-// ESM module loading (Node.js)
-import { URLPattern } from "urlpattern-polyfill";
-
-// ESM module loading (browsers)
-import { URLPattern } from "urlpattern-polyfill/dist/index.js";
-```
-
-Additionally, the polyfill will only be fully loaded if the URLPattern doesn't
-already exist on the global object, and in that case it will add it to the global object.
+The polyfill will only be loaded if the URLPattern doesn't already exist on the global object, and in that case it will add it to the global object.
 
 ```javascript
 // CJS module loading (Node.js)
@@ -116,14 +104,14 @@ class URLPattern {
 
   exec(input?: URLPatternInput, baseURL?: string): URLPatternResult | null;
 
-  get protocol(): string;
-  get username(): string;
-  get password(): string;
-  get hostname(): string;
-  get port(): string;
-  get pathname(): string;
-  get search(): string;
-  get hash(): string;
+  readonly protocol: string;
+  readonly username: string;
+  readonly password: string;
+  readonly hostname: string;
+  readonly port: string;
+  readonly pathname: string;
+  readonly search: string;
+  readonly hash: string;
 }
 
 interface URLPatternInit {
