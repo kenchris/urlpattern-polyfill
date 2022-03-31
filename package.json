@@ -23,8 +23,8 @@
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build:esm": "esbuild --bundle --format=esm src/index.ts --outfile=dist/index.raw.js && cp ./src/patch-global.js ./dist/index.js",
-    "build:cjs": "esbuild --bundle --format=cjs src/index.ts --outfile=dist/index.raw.cjs && cp ./src/patch-global.cjs ./dist/index.cjs",
+    "build:esm": "esbuild --bundle --format=esm src/index.ts --outfile=dist/index.impl.js && esbuild --format=esm src/patch-global.ts --outfile=dist/index.js",
+    "build:cjs": "esbuild --bundle --format=cjs src/index.ts --outfile=dist/index.impl.cjs && esbuild --format=cjs src/patch-global-cjs.ts --outfile=dist/index.cjs",
     "copy:dts": "cp ./src/index.d.ts ./dist",
     "build": "npm run build:esm && npm run build:cjs && npm run copy:dts",
     "pretest": "npm run build",
