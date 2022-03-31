@@ -107,13 +107,24 @@ API reference
 API overview with typeScript type annotations is found below. Associated browser Web IDL can be found [here](https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/modules/url_pattern/).
 
 ```ts
-class URLPattern {
-  constructor(init: URLPatternInit);
-  constructor(shortPattern: string, baseURL: string = ""));
+type URLPatternInput = URLPatternInit | string;
 
-  test(input: URLPattern | string): boolean;
-  exec(input: URLPattern | string): URLPatternResult;
-};
+class URLPattern {
+  constructor(init?: URLPatternInput, baseURL?: string);
+
+  test(input?: URLPatternInput, baseURL?: string): boolean;
+
+  exec(input?: URLPatternInput, baseURL?: string): URLPatternResult | null;
+
+  get protocol(): string;
+  get username(): string;
+  get password(): string;
+  get hostname(): string;
+  get port(): string;
+  get pathname(): string;
+  get search(): string;
+  get hash(): string;
+}
 
 interface URLPatternInit {
   baseURL?: string;
@@ -127,14 +138,8 @@ interface URLPatternInit {
   hash?: string;
 }
 
-interface URLPatternComponentResult {
-  input: string;
-  groups: { [key: string]: string };
-}
-
 interface URLPatternResult {
-  input: URLPatternInit | string;
-
+  inputs: [URLPatternInput];
   protocol: URLPatternComponentResult;
   username: URLPatternComponentResult;
   password: URLPatternComponentResult;
@@ -144,6 +149,14 @@ interface URLPatternResult {
   search: URLPatternComponentResult;
   hash: URLPatternComponentResult;
 }
+
+interface URLPatternComponentResult {
+  input: string;
+  groups: {
+      [key: string]: string | undefined;
+  };
+}
+
 ```
 
 Pattern syntax
