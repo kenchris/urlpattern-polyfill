@@ -1,9 +1,12 @@
 import test from 'ava';
 import { readFileSync } from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { URLPattern } from '../dist/index.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const baseURL = 'https://example.com';
 
 const kComponents = [
