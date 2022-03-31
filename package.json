@@ -16,7 +16,7 @@
   ],
   "devDependencies": {
     "ava": "^3.14.0",
-    "esm": "latest",
+    "esm": "^3.2.25",
     "rimraf": "latest",
     "tsup": "latest",
     "typescript": "latest"
