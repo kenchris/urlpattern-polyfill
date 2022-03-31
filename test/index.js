@@ -91,7 +91,6 @@ test('JavaScript URL routing 2/2', t => {
 */
 
 
-
 let rawdata = readFileSync(path.resolve(__dirname, 'urlpatterntestdata.json'));
 let data = JSON.parse(rawdata);
 let i = 0;
