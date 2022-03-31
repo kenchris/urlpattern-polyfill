@@ -19,12 +19,14 @@
     "ava": "^3.14.0",
     "esm": "^3.2.25",
     "rimraf": "^3.0.2",
-    "tsup": "^5.12.1",
     "typescript": "^4.6.3"
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "build:esm": "esbuild --bundle --format=esm src/index.ts --outfile=dist/index.raw.js && cp ./src/patch-global.js ./dist/index.js",
+    "build:cjs": "esbuild --bundle --format=cjs src/index.ts --outfile=dist/index.raw.cjs && cp ./src/patch-global.cjs ./dist/index.cjs",
+    "copy:dts": "cp ./src/index.d.ts ./dist",
+    "build": "npm run build:esm && npm run build:cjs && npm run copy:dts",
     "pretest": "npm run build",
     "test": "ava --fail-fast -s",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
