@@ -17,9 +17,9 @@
   "devDependencies": {
     "ava": "^3.14.0",
     "esm": "^3.2.25",
-    "rimraf": "latest",
-    "tsup": "latest",
-    "typescript": "latest"
+    "rimraf": "^3.0.2",
+    "tsup": "^5.12.1",
+    "typescript": "^4.6.3"
   },
   "scripts": {
     "prebuild": "rimraf dist",
