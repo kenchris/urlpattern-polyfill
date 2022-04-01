@@ -1,5 +1,5 @@
-import { URLPattern } from "./url-pattern.cjs";
 
 if (!globalThis.URLPattern) {
+  const {URLPattern} = require("./url-pattern.cjs");
   globalThis.URLPattern = URLPattern;
 }
