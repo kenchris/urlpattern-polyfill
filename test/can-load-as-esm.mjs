@@ -1,4 +1,4 @@
-import "../dist/index.mjs";
+import "../dist/index.js";
 import  test  from "ava";
 
 const baseURL = 'https://example.com';

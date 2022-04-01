@@ -8,7 +8,7 @@
   },
   "type": "module",
   "exports": {
-    "import": "./dist/index.mjs",
+    "import": "./dist/index.js",
     "require": "./dist/index.cjs",
     "types": "./dist/index.d.ts"
   },
@@ -23,7 +23,7 @@
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build:esm": "esbuild --bundle --format=esm src/url-pattern.ts --outfile=dist/url-pattern.mjs && esbuild --format=esm src/patch-global.mts --outfile=dist/index.mjs",
+    "build:esm": "esbuild --bundle --format=esm src/url-pattern.ts --outfile=dist/url-pattern.mjs && esbuild --format=esm src/patch-global.mts --outfile=dist/index.js",
     "build:cjs": "esbuild --bundle --format=cjs src/url-pattern.ts --outfile=dist/url-pattern.cjs && esbuild --format=cjs src/patch-global.cts --outfile=dist/index.cjs",
  
     "copy:dts": "cp ./src/index.d.ts ./dist",
