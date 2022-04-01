@@ -8,7 +8,7 @@
   },
   "type": "module",
   "exports": {
-    "import": "./dist/index.js",
+    "import": "./dist/index.mjs",
     "require": "./dist/index.cjs",
     "types": "./dist/index.d.ts"
   },
@@ -17,26 +17,22 @@
   ],
   "devDependencies": {
     "ava": "^3.14.0",
-    "esm": "^3.2.25",
+    "esbuild": "^0.14.29",
     "rimraf": "^3.0.2",
     "typescript": "^4.6.3"
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build:esm": "esbuild --bundle --format=esm src/index.ts --outfile=dist/index.impl.js && esbuild --format=esm src/patch-global.ts --outfile=dist/index.js",
-    "build:cjs": "esbuild --bundle --format=cjs src/index.ts --outfile=dist/index.impl.cjs && esbuild --format=cjs src/patch-global-cjs.ts --outfile=dist/index.cjs",
+    "build:esm": "esbuild --bundle --format=esm src/url-pattern.ts --outfile=dist/url-pattern.mjs && esbuild --format=esm src/patch-global.mts --outfile=dist/index.mjs",
+    "build:cjs": "esbuild --bundle --format=cjs src/url-pattern.ts --outfile=dist/url-pattern.cjs && esbuild --format=cjs src/patch-global.cts --outfile=dist/index.cjs",
+ 
     "copy:dts": "cp ./src/index.d.ts ./dist",
     "build": "npm run build:esm && npm run build:cjs && npm run copy:dts",
     "pretest": "npm run build",
     "test": "ava --fail-fast -s",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
   },
-  "ava": {
-    "require": [
-      "esm"
-    ]
-  },
+
   "author": "",
-  "license": "MIT",
-  "dependencies": {}
+  "license": "MIT"
 }
