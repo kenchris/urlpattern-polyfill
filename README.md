@@ -17,10 +17,14 @@ The polyfill will only be loaded if the URLPattern doesn't already exist on the 
 require("urlpattern-polyfill");
 
 // ESM module loading (Node.js)
+if (!globalThis.URLPattern) {
+  await import("urlpattern-polyfill");
+}
+/** 
+ * The above is the recommend way. However, when you can't
+ * use top level await you can load it like this:
+ */
 import from "urlpattern-polyfill";
-
-// ESM module loading (browsers)
-import from "urlpattern-polyfill/dist/index.js";
 ```
 
 Basic example
