@@ -28,7 +28,7 @@ if (!globalThis.URLPattern) {
  * loads it on demand, thus when not natively supported by the runtime or
  * already polyfilled.
  */
-import from "urlpattern-polyfill";
+import "urlpattern-polyfill";
 
 /** 
  * In case you want to replace an existing implementation with the polyfill:
