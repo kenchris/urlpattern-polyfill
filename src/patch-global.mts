@@ -1,4 +1,4 @@
-import { URLPattern } from "./index.impl.js";
+import { URLPattern } from "./url-pattern.mjs";
 
 if (!globalThis.URLPattern) {
   globalThis.URLPattern = URLPattern;
