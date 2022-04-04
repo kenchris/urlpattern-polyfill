@@ -1,3 +1,5 @@
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/kenchris/urlpattern-polyfill/workflow.yml/main?style=for-the-badge)
+
 URLPattern polyfills
 ===
 
