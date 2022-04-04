@@ -8,3 +8,10 @@ test('urlPattern', t => {
   let pattern = new URLPattern({baseURL, pathname: '/product/*?'});
   t.true(pattern.test(baseURL + '/product/a/b'));
 });
+
+test('export of urlPattern there?', async t => {
+  /** overwrite global wil local version imported, so we know the export is in place */
+  const {URLPattern} = await import("../dist/index.js");
+  let pattern = new URLPattern({baseURL, pathname: '/product/*?'});
+  t.true(pattern.test(baseURL + '/product/a/b'));
+})

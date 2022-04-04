@@ -16,16 +16,22 @@ The polyfill will only be loaded if the URLPattern doesn't already exist on the 
 // CJS module loading (Node.js)
 require("urlpattern-polyfill");
 
-// ESM module loading (Node.js and browser)
+// Conditional ESM module loading (Node.js and browser)
 if (!globalThis.URLPattern) {
   await import("urlpattern-polyfill");
 }
 /** 
- * The above is the recommend way to load the ESM module. 
- * However, when you can't use top level await,
- * you can load it like this:
+ * The above is the recommended way to load the ESM module, as it only
+ * loads it on demand, thus when not natively supported by the runtime or
+ * already polyfilled.
  */
 import from "urlpattern-polyfill";
+
+/** 
+ * In case you want to replace an existing implementation with the polyfill:
+ */
+import {URLPattern} from "urlpattern-polyfill";
+globalThis.URLPattern = URLPattern
 ```
 
 Basic example
