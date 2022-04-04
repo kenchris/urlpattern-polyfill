@@ -13,14 +13,11 @@ The polyfill works in browsers (ESM module) and in Node.js either via import (ES
 The polyfill will only be loaded if the URLPattern doesn't already exist on the global object, and in that case it will add it to the global object.
 
 ```javascript
-// CJS module loading (Node.js)
+// CJS module loading
 require("urlpattern-polyfill");
 
-// ESM module loading (Node.js)
-import from "urlpattern-polyfill";
-
-// ESM module loading (browsers)
-import from "urlpattern-polyfill/dist/index.js";
+// ESM module loading
+import "urlpattern-polyfill";
 ```
 
 Basic example
