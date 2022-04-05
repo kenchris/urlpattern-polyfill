@@ -1,4 +1,4 @@
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/kenchris/urlpattern-polyfill/workflow.yml/main?style=for-the-badge)
+[![run-tests](https://github.com/kenchris/urlpattern-polyfill/actions/workflows/workflow.yml/badge.svg)](https://github.com/kenchris/urlpattern-polyfill/actions/workflows/workflow.yml)
 ![npm (tag)](https://img.shields.io/npm/v/urlpattern-polyfill/latest?style=for-the-badge)
 
 URLPattern polyfills
