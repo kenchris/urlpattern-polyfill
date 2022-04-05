@@ -1,5 +1,6 @@
 [![run-tests](https://github.com/kenchris/urlpattern-polyfill/actions/workflows/workflow.yml/badge.svg)](https://github.com/kenchris/urlpattern-polyfill/actions/workflows/workflow.yml)
 [![npm (tag)](https://img.shields.io/npm/v/urlpattern-polyfill/latest?style=flat-square)](https://www.npmjs.com/package/urlpattern-polyfill)
+![GitHub](https://img.shields.io/github/license/kenchris/urlpattern-polyfill?style=flat-square)
 
 URLPattern polyfills
 ===
