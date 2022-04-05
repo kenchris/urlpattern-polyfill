@@ -12,9 +12,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src/**/*.ts"
