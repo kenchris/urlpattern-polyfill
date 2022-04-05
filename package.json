@@ -18,11 +18,11 @@
     "url",
     "urlpattern",
     "url-pattern",
-    "type-script",
-    "javascript",
     "browser",
     "node",
-    "polyfill"
+    "polyfill",
+    "w3c",
+    "wicg"
   ],
   "files": [
     "dist"
