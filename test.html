@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test document for browser testing</title>
+</head>
+<body>
+  <script type="module">
+    import {URLPattern} from 'https://cdn.jsdelivr.net/npm/urlpattern-polyfill@4.0.1/dist/index.js';
+    const header = document.createElement('h1');
+    header.textContent = 'Failed testing document for URL pattern testing';
+    if (typeof URLPattern === 'function') {
+      header.textContent = 'Succeeded testing document for URL pattern testing';      
+    }
+    document.body.appendChild(header);
+  </script>
+  
+</body>
+</html>
