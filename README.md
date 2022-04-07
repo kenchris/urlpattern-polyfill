@@ -59,7 +59,7 @@ globalThis.URLPattern = URLPattern
 ```
 
 > ## Note:
-> No matter how yo load the polyfill, when there is no implementation in your environment, it will _allways_ add it to the global.
+> No matter how you load the polyfill, when there is no implementation in your environment, it will _allways_ add it to the global.
 
 Basic example
 ---
