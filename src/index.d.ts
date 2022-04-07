@@ -1,49 +1,53 @@
-export type URLPatternInput = URLPatternInit | string;
+export {};
 
-export class URLPattern {
-  constructor(init?: URLPatternInput, baseURL?: string);
+declare global {
+ type URLPatternInput = URLPatternInit | string;
 
-  test(input?: URLPatternInput, baseURL?: string): boolean;
+  class URLPattern {
+    constructor(init?: URLPatternInput, baseURL?: string);
 
-  exec(input?: URLPatternInput, baseURL?: string): URLPatternResult | null;
+    test(input?: URLPatternInput, baseURL?: string): boolean;
 
-  readonly protocol: string;
-  readonly username: string;
-  readonly password: string;
-  readonly hostname: string;
-  readonly port: string;
-  readonly pathname: string;
-  readonly search: string;
-  readonly hash: string;
-}
+    exec(input?: URLPatternInput, baseURL?: string): URLPatternResult | null;
 
-export interface URLPatternInit {
-  baseURL?: string;
-  username?: string;
-  password?: string;
-  protocol?: string;
-  hostname?: string;
-  port?: string;
-  pathname?: string;
-  search?: string;
-  hash?: string;
-}
+    readonly protocol: string;
+    readonly username: string;
+    readonly password: string;
+    readonly hostname: string;
+    readonly port: string;
+    readonly pathname: string;
+    readonly search: string;
+    readonly hash: string;
+  }
 
-export interface URLPatternResult {
-  inputs: [URLPatternInput];
-  protocol: URLPatternComponentResult;
-  username: URLPatternComponentResult;
-  password: URLPatternComponentResult;
-  hostname: URLPatternComponentResult;
-  port: URLPatternComponentResult;
-  pathname: URLPatternComponentResult;
-  search: URLPatternComponentResult;
-  hash: URLPatternComponentResult;
-}
+  interface URLPatternInit {
+    baseURL?: string;
+    username?: string;
+    password?: string;
+    protocol?: string;
+    hostname?: string;
+    port?: string;
+    pathname?: string;
+    search?: string;
+    hash?: string;
+  }
 
-export interface URLPatternComponentResult {
-  input: string;
-  groups: {
-      [key: string]: string | undefined;
-  };
+  interface URLPatternResult {
+    inputs: [URLPatternInput];
+    protocol: URLPatternComponentResult;
+    username: URLPatternComponentResult;
+    password: URLPatternComponentResult;
+    hostname: URLPatternComponentResult;
+    port: URLPatternComponentResult;
+    pathname: URLPatternComponentResult;
+    search: URLPatternComponentResult;
+    hash: URLPatternComponentResult;
+  }
+
+  interface URLPatternComponentResult {
+    input: string;
+    groups: {
+        [key: string]: string | undefined;
+    };
+  }
 }
