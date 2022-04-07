@@ -45,7 +45,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build:esm": "esbuild --bundle --format=esm src/patch-global.mts --outfile=dist/index.js",
-    "build:cjs": "esbuild --bundle --format=cjs src/url-pattern.ts --outfile=dist/url-pattern.cjs && esbuild --format=cjs src/patch-global.cts --outfile=dist/index.cjs",
+    "build:cjs": "esbuild --bundle --format=cjs src/patch-global.cts --outfile=dist/index.cjs",
     "copy:dts": "cp ./src/index.d.ts ./dist",
     "build": "npm run build:esm && npm run build:cjs && npm run copy:dts",
     "pretest": "npm run build",
