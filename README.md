@@ -16,10 +16,9 @@ The polyfill works in browsers (ESM module) and in Node.js either via import (ES
 
 The polyfill will only be loaded if the URLPattern doesn't already exist on the global object, and in that case it will add it to the global object.
 
-```javascript
-// CJS module loading (Node.js)
-require("urlpattern-polyfill");
+## loading as ESM module
 
+```javascript
 // Conditional ESM module loading (Node.js and browser)
 if (!globalThis.URLPattern) {
   await import("urlpattern-polyfill");
@@ -37,6 +36,30 @@ import "urlpattern-polyfill";
 import {URLPattern} from "urlpattern-polyfill";
 globalThis.URLPattern = URLPattern
 ```
+
+## loading as CommonJs module
+
+```javascript
+// Conditional CJS module loading (Node.js)
+if (!globalThis.URLPattern) {
+   require("urlpattern-polyfill");
+}
+/** 
+ * The above is the recommended way to load the CommonJs module, as it only
+ * loads it on demand, thus when not natively supported by the runtime or
+ * already polyfilled.
+ */
+require("urlpattern-polyfill");
+
+/** 
+ * In case you want to replace an existing implementation with the polyfill:
+ */
+const {URLPattern} = require("urlpattern-polyfill");;
+globalThis.URLPattern = URLPattern
+```
+
+> ## Note:
+> No matter how yo load the polyfill, when there is no implementation in your environment, it will _allways_ add it to the global.
 
 Basic example
 ---
