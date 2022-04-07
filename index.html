@@ -1,7 +1,7 @@
 <html>
   <head></head>
-<script type=module>
-  import { URLPattern, URLPatternList, parseShorthand } from "./src/index.js";
+<script type="module">
+  import { URLPattern } from "./dist/index.js";
 
   window.URLPattern = URLPattern;
 
@@ -45,21 +45,19 @@
     pathname: "/employee/:name*",
   });
 
-  let list = new URLPatternList([p1, p2]);
-  console.log(list.test(self.origin + "/product/a"));
+  const baseURL = 'https://example.com';
 
-  let initlist = new URLPatternList([
-    { pathname: "/product/:name*" },
-    { pathname: "/product/:type*"}
-  ], { baseURL: self.origin });
-  let res = initlist.exec(self.origin + "/product/a");
-  assert(res.pathname.groups['name'], "a");
 
-  let initlist2 = new URLPatternList([
-    "/product/:name*", "/product/:type*"
-  ], { baseURL: self.origin });
-  let res2 = initlist2.exec(self.origin + "/product/a");
-  assert(res2.pathname.groups['name'], "a");
+  const ppattern = new URLPattern({baseURL, pathname: '/product/*?'});
+  const res = ppattern.test(baseURL + '/product/a/b');
+  if (res) {
+    document.body.style.backgroundColor = 'green';
+  } else {
+    document.body.style.backgroundColor = 'red';
+  }
+  document.body.innerHTML = `<h1>${res ? "PASS" : "FAIL"}</h1>`;
+
+
 
 </script>
 </html>
