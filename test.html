@@ -10,12 +10,11 @@
   <script type="module">
     import {URLPattern} from 'https://cdn.jsdelivr.net/npm/urlpattern-polyfill@4.0.1/dist/index.js';
     const header = document.createElement('h1');
-    header.textContent = 'Failed testing document for URL pattern testing';
+    header.textContent = 'Fail. URLPattern is not exported by the polyfill';
     if (typeof URLPattern === 'function') {
-      header.textContent = 'Succeeded testing document for URL pattern testing';      
+      header.textContent = 'Pass. URLPattern is a function.';      
     }
     document.body.appendChild(header);
-  </script>
-  
+  </script>  
 </body>
 </html>
