@@ -2,6 +2,7 @@
   <head></head>
 <script type="module">
   import { URLPattern } from "./dist/index.js";
+  import { runTests } from "/test/wpt/wpt-test-runner.js";
 
   window.URLPattern = URLPattern;
 
@@ -47,17 +48,76 @@
 
   const baseURL = 'https://example.com';
 
+  const test = (title, fn) => {
+    const t = new class {
+      failures = 0;
+      true(a) {
+        if (!a) this.failures++;
+      }
+      is(a, b) {
+        if (a !== b) this.failures++;
+      }
+      deepEqual(a, b) {
+        let _deepEqual = (a, b) => {
+          const isObject = o => typeof o === "object" && o !== null;
 
-  const ppattern = new URLPattern({baseURL, pathname: '/product/*?'});
-  const res = ppattern.test(baseURL + '/product/a/b');
-  if (res) {
-    document.body.style.backgroundColor = 'green';
-  } else {
-    document.body.style.backgroundColor = 'red';
+          if (isObject(a) && isObject(b)) {
+            const keysA = Object.keys(a);
+            const keysB = Object.keys(b);
+
+            if (keysA.length !== keysB.length) {
+              return false;
+            }
+
+            for (let i = 0; i < keysA.length; i++) {
+              if (!_deepEqual(a[keysA[i]], b[keysA[i]])) {
+                return false;
+              }
+            }
+          } else if (a !== b) {
+            return false;
+          }
+
+          return true;
+        }
+        if (!_deepEqual(a, b)) this.failures++;
+      }
+      throws(fn, options = {}) {
+        let didPass = false;
+        try {
+          fn();
+        } catch (err) {
+          didPass = true;
+          if (options.instanceOf && !(err instanceof options.instanceOf)) {
+            didPass = false;
+          }
+        }
+        if (!didPass) this.failures++;
+      }
+    }
+
+    fn(t);
+
+    const child = document.createElement('div');
+    if (t.failures <= 0) {
+      child.innerHTML = `
+        <span style='background-color: green'>PASS</span>: ${title}
+      `;
+    } else {
+      child.innerHTML = `
+        <span style='background-color: red'>FAIL</span>: ${title}
+      `;
+    }
+    document.body.appendChild(child);
   }
-  document.body.innerHTML = `<h1>${res ? "PASS" : "FAIL"}</h1>`;
 
+  test('urlPattern', t => {
+    let pattern = new URLPattern({baseURL, pathname: '/product/*?'});
+    t.true(pattern.test(baseURL + '/product/a/b'));
+  });
 
-
+  const src = await fetch('/test/urlpatterntestdata.json');
+  const json = await src.json();
+  runTests(json, test);
 </script>
 </html>
