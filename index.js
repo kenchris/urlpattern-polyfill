@@ -1,5 +1,6 @@
+import { URLPattern } from "./dist/pony.js";
 
-export const {URLPattern} = require("./url-pattern");
+export { URLPattern };
 
 if (!globalThis.URLPattern) {
   globalThis.URLPattern = URLPattern;

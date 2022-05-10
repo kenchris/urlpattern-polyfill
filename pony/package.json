@@ -1,0 +1,5 @@
+{
+  "main": "../dist/pony.cjs",
+  "module": "../dist/pony.js",
+  "types": "../dist/types.d.ts"
+}
