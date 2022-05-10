@@ -1,4 +1,5 @@
-import { URLPattern } from "./url-pattern";
+import { URLPattern } from "./dist/urlpattern.js";
+
 export { URLPattern };
 
 if (!globalThis.URLPattern) {

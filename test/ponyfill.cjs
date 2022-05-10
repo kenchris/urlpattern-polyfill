@@ -1,5 +1,5 @@
-require("urlpattern-polyfill");
 const test = require("ava");
+const { URLPattern } = require("urlpattern-polyfill/urlpattern");
 
 const baseURL = "https://example.com";
 
@@ -8,7 +8,6 @@ test("urlPattern", (t) => {
   t.true(pattern.test(baseURL + "/product/a/b"));
 });
 
-test("exports urlPattern", (t) => {
-  const { URLPattern } = require("urlpattern-polyfill");
-  t.true(typeof URLPattern === "function");
+test("does not pollute global scope", (t) => {
+  t.true(typeof globalThis.URLPattern === "undefined");
 });

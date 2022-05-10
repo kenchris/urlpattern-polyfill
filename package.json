@@ -7,12 +7,18 @@
     "url": "https://github.com/kenchris/urlpattern-polyfill"
   },
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./index.cjs",
+  "module": "./index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    "import": "./dist/index.js",
-    "require": "./dist/index.cjs"
+    "./urlpattern": {
+      "import": "./dist/urlpattern.js",
+      "require": "./dist/urlpattern.cjs"
+    },
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
   },
   "tags": [
     "url",
@@ -48,11 +54,11 @@
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build:esm": "esbuild --bundle --format=esm src/patch-global.mts --outfile=dist/index.js",
-    "build:cjs": "esbuild --bundle --format=cjs src/patch-global.cts --outfile=dist/index.cjs",
-    "copy:dts": "cp ./src/index.d.ts ./dist",
+    "build:esm": "esbuild --bundle --format=esm src/url-pattern.ts --outfile=dist/urlpattern.js",
+    "build:cjs": "esbuild --bundle --format=cjs src/url-pattern.ts --outfile=dist/urlpattern.cjs",
+    "copy:dts": "cp ./src/index.d.ts ./src/types.d.ts ./dist",
     "build": "npm run build:esm && npm run build:cjs && npm run copy:dts",
-    "pretest": "npm run build",
+    "pretest": "npm run build; rm -rf node_modules/urlpattern-polyfill; ln -s $(pwd) node_modules/urlpattern-polyfill",
     "test": "ava --fail-fast -s",
     "manual-test": "npx http-server -o /index.html -p 4203",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
