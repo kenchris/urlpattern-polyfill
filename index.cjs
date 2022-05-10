@@ -1,4 +1,4 @@
-const { URLPattern } = require("./dist/url-pattern.cjs");
+const { URLPattern } = require("./dist/urlpattern.cjs");
 
 module.exports = { URLPattern };
 

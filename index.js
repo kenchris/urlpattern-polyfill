@@ -1,4 +1,4 @@
-import { URLPattern } from "./dist/url-pattern.js";
+import { URLPattern } from "./dist/urlpattern.js";
 
 export { URLPattern };
 

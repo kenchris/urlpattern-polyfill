@@ -1,0 +1,5 @@
+{
+  "main": "../dist/urlpattern.cjs",
+  "module": "../dist/urlpattern.js",
+  "types": "../dist/types.d.ts"
+}
