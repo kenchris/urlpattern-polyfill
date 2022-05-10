@@ -1,5 +1,5 @@
 import test from "ava";
-import { URLPattern } from "urlpattern-polyfill/pony";
+import { URLPattern } from "urlpattern-polyfill/url-pattern";
 
 const baseURL = "https://example.com";
 

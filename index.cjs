@@ -1,4 +1,4 @@
-const { URLPattern } = require("./dist/pony.cjs");
+const { URLPattern } = require("./dist/url-pattern.cjs");
 
 module.exports = { URLPattern };
 

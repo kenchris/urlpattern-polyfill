@@ -1,5 +1,5 @@
 const test = require("ava");
-const { URLPattern } = require("urlpattern-polyfill/pony");
+const { URLPattern } = require("urlpattern-polyfill/url-pattern");
 
 const baseURL = "https://example.com";
 

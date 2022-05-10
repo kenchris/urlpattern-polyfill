@@ -11,9 +11,9 @@
   "module": "./index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    "./pony": {
-      "import": "./dist/pony.js",
-      "require": "./dist/pony.cjs"
+    "./url-pattern": {
+      "import": "./dist/url-pattern.js",
+      "require": "./dist/url-pattern.cjs"
     },
     ".": {
       "import": "./index.js",
@@ -54,8 +54,8 @@
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build:esm": "esbuild --bundle --format=esm src/url-pattern.ts --outfile=dist/pony.js",
-    "build:cjs": "esbuild --bundle --format=cjs src/url-pattern.ts --outfile=dist/pony.cjs",
+    "build:esm": "esbuild --bundle --format=esm src/url-pattern.ts --outfile=dist/url-pattern.js",
+    "build:cjs": "esbuild --bundle --format=cjs src/url-pattern.ts --outfile=dist/url-pattern.cjs",
     "copy:dts": "cp ./src/index.d.ts ./src/types.d.ts ./dist",
     "build": "npm run build:esm && npm run build:cjs && npm run copy:dts",
     "pretest": "npm run build; rm -rf node_modules/urlpattern-polyfill; ln -s $(pwd) node_modules/urlpattern-polyfill",

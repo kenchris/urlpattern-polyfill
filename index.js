@@ -1,4 +1,4 @@
-import { URLPattern } from "./dist/pony.js";
+import { URLPattern } from "./dist/url-pattern.js";
 
 export { URLPattern };
 
