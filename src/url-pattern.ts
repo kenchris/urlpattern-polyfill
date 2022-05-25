@@ -155,8 +155,8 @@ function escapeRegexpString(value: string): string {
 function tokensToPattern(tokens: Token[],
                          options: TokensToRegexpOptions & ParseOptions): string {
   const wildcardPattern = ".*";
-  const segmentWildcardPattern =
-      `[^${escapeRegexpString(options.delimiter || '/#?')}]+?`;
+  const segmentWildcardPattern = 
+      `[^${escapeRegexpString(options.delimiter ?? '/#?')}]+?`;
   const regexIdentifierPart = /[$_\u200C\u200D\p{ID_Continue}]/u;
 
   let result = "";
