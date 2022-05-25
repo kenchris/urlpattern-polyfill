@@ -31,7 +31,9 @@
     "wicg"
   ],
   "files": [
-    "dist"
+    "dist",
+    "index.js",
+    "index.cjs"
   ],
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
