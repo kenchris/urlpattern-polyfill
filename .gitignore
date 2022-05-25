@@ -3,3 +3,4 @@ dist
 .vscode
 package-lock.json
 coverage
+.wireit

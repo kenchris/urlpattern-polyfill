@@ -2727,5 +2727,15 @@
     "expected_match": {
       "pathname": { "input": "/bazbar", "groups": { "foo": "baz" }}
     }
+  },
+  {
+    "pattern": [{ "search": "a=:a" }],
+    "inputs": [ "https://example.com/foo/bar?a=x/y" ],
+    "expected_match": {
+      "hostname": { "input": "example.com", "groups": { "0": "example.com" } },
+      "pathname": { "input": "/foo/bar", "groups": {"0": "/foo/bar"} },
+      "protocol": { "input": "https", "groups": { "0": "https" } },
+      "search": { "input": "a=x/y", "groups": { "a": "x/y" }}
+    }
   }
 ]
