@@ -20,7 +20,7 @@ The polyfill will only be loaded if the URLPattern doesn't already exist on the 
 
 ```javascript
 // Conditional ESM module loading (Node.js and browser)
-if (!globalThis.URLPattern) {
+if (!globalThis['URLPattern']) { // bracket notation, as the types are only there _after_ loading the ployfill
   await import("urlpattern-polyfill");
 }
 /** 
