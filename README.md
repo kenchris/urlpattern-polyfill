@@ -20,7 +20,8 @@ The polyfill will only be loaded if the URLPattern doesn't already exist on the 
 
 ```javascript
 // Conditional ESM module loading (Node.js and browser)
-if (!globalThis['URLPattern']) { // bracket notation, as the types are only there _after_ loading the ployfill
+// @ts-ignore: Property 'UrlPattern' does not exist 
+if (!globalThis.URLPattern) { 
   await import("urlpattern-polyfill");
 }
 /** 
@@ -57,6 +58,8 @@ require("urlpattern-polyfill");
 const {URLPattern} = require("urlpattern-polyfill");;
 globalThis.URLPattern = URLPattern
 ```
+> ## Note:
+> The line with `// @ts-ignore: Property 'UrlPattern' does not exist ` is needed in some environments because before you load the polyfill it might not be available, and the feature-check in the if statement gives an TypeScript error. The whole idea is that it loads when its not there. 
 
 > ## Note:
 > No matter how you load the polyfill, when there is no implementation in your environment, it will _always_ add it to the global object.
