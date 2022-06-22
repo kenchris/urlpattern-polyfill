@@ -8,9 +8,10 @@ export interface URLPatternInit {
   pathname?: string;
   search?: string;
   hash?: string;
+  caseSensitivePath?: boolean;
 }
 
-export type URLPatternKeys = keyof URLPatternInit
+export type URLPatternKeys = Exclude<keyof URLPatternInit, 'caseSensitivePath'>
 
 export interface URLPatternResult {
   inputs: [URLPatternInit | string];

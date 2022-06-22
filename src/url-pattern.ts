@@ -138,6 +138,10 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
     o.hash = canonicalizeHash(init.hash, isPattern);
   }
 
+  if (typeof init.caseSensitivePath === 'boolean') {
+    o.caseSensitivePath = init.caseSensitivePath;
+  }
+
   return o;
 }
 
@@ -332,7 +336,7 @@ export class URLPattern {
         throw new TypeError(`parameter 1 is not of type 'string' and cannot convert to dictionary.`);
       }
 
-      const defaults = {
+      const defaults: URLPatternInit = {
         pathname: DEFAULT_PATTERN,
         protocol: DEFAULT_PATTERN,
         username: DEFAULT_PATTERN,
@@ -341,6 +345,7 @@ export class URLPattern {
         port: DEFAULT_PATTERN,
         search: DEFAULT_PATTERN,
         hash: DEFAULT_PATTERN,
+        caseSensitivePath: true,
       };
 
       this.pattern = applyInit(defaults, init, true);
@@ -385,11 +390,12 @@ export class URLPattern {
             options.encodePart = portEncodeCallback;
             break;
           case 'pathname':
+            const sensitiveOptions = { sensitive: this.pattern.caseSensitivePath };
             if (isSpecialScheme(this.regexp.protocol)) {
-              Object.assign(options, PATHNAME_OPTIONS);
+              Object.assign(options, PATHNAME_OPTIONS, sensitiveOptions);
               options.encodePart = standardURLPathnameEncodeCallback;
             } else {
-              Object.assign(options, DEFAULT_OPTIONS);
+              Object.assign(options, DEFAULT_OPTIONS, sensitiveOptions);
               options.encodePart = pathURLPathnameEncodeCallback;
             }
             break;
@@ -447,8 +453,8 @@ export class URLPattern {
       return false;
     }
 
-    let component:URLPatternKeys
-    for (component in this.pattern) {
+    let component: URLPatternKeys;
+    for (component of COMPONENTS) {
       if (!this.regexp[component].exec(values[component])) {
         return false;
       }
@@ -496,7 +502,7 @@ export class URLPattern {
     }
 
     let component: URLPatternKeys;
-    for (component in this.pattern) {
+    for (component of COMPONENTS) {
       let match = this.regexp[component].exec(values[component]);
       if (!match) {
         return null;
