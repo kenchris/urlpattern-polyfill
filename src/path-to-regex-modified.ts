@@ -329,9 +329,9 @@ export function parse(str: string, options: ParseOptions = {}): Token[] {
 
 export interface TokensToFunctionOptions {
   /**
-   * When `true` the regexp will be case sensitive. (default: `false`)
+   * When `true` the regexp will be case insensitive. (default: `false`)
    */
-  sensitive?: boolean;
+  ignoreCase?: boolean;
   /**
    * Function for encoding input strings for output.
    */
@@ -523,8 +523,8 @@ function escapeString(str: string) {
 /**
  * Get the flags for a regexp from the options.
  */
-function flags(options?: { sensitive?: boolean }) {
-  return options && options.sensitive ? "u" : "ui";
+function flags(options?: { ignoreCase?: boolean }) {
+  return options && options.ignoreCase ? "ui" : "u";
 }
 
 /**
@@ -593,9 +593,9 @@ function stringToRegexp(
 
 export interface TokensToRegexpOptions {
   /**
-   * When `true` the regexp will be case sensitive. (default: `false`)
+   * When `true` the regexp will be case insensitive. (default: `false`)
    */
-  sensitive?: boolean;
+  ignoreCase?: boolean;
   /**
    * When `true` the regexp won't allow an optional trailing delimiter to match. (default: `false`)
    */

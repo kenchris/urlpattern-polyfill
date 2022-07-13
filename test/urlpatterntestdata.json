@@ -836,29 +836,29 @@
   },
 
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/baR" }],
     "expected_match": {
       "pathname": { "input": "/fOo/baR", "groups": {} }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/ba" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [ "https://example.com/fOo/baR" ],
     "expected_match": {
       "hostname": { "input": "example.com", "groups": { "0": "example.com" } },
@@ -867,12 +867,12 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [ "https://example.com/foo/bar/baz" ],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [{ "hostname": "example.com", "pathname": "/fOo/baR" }],
     "expected_match": {
       "hostname": { "input": "example.com", "groups": { "0": "example.com" } },
@@ -880,12 +880,12 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [{ "hostname": "example.com", "pathname": "/foo/bar/baz" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/baR", "baseURL": "https://example.com" }],
     "expected_match": {
       "hostname": { "input": "example.com", "groups": { "0": "example.com" } },
@@ -894,38 +894,30 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz",
                  "baseURL": "https://example.com" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash" }, { "ignoreCase": true }],
     "inputs": [{ "pathname": "/foo/bar" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [{ "hostname": "example.com", "pathname": "/foo/bar" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [{ "protocol": "https", "hostname": "example.com",
                  "pathname": "/foo/bar" }],
     "exactly_empty_components": [ "username", "password", "port" ],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com"}, { "ignoreCase": true }],
     "inputs": [{ "protocol": "https", "hostname": "example.com",
                  "pathname": "/fOo/baR" }],
     "exactly_empty_components": [ "username", "password", "port", "search",
@@ -937,17 +929,13 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com"}, { "ignoreCase": true }],
     "inputs": [{ "protocol": "https", "hostname": "example.com",
                  "pathname": "/foo/bar/baz" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [{ "protocol": "https", "hostname": "example.com",
                  "pathname": "/foo/bar", "search": "otherquery",
                  "hash": "otherhash" }],
@@ -955,9 +943,7 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar","baseURL": "https://example.com"}, { "ignoreCase": true }],
     "inputs": [{ "protocol": "https", "hostname": "example.com",
                  "pathname": "/foo/bar", "search": "otherquery",
                  "hash": "otherhash" }],
@@ -981,25 +967,19 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [ "https://example.com/foo/bar" ],
     "exactly_empty_components": [ "username", "password", "port" ],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [ "https://example.com/foo/bar?otherquery#otherhash" ],
     "exactly_empty_components": [ "username", "password", "port" ],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [ "https://example.com/fOo/baR?query#hash" ],
     "exactly_empty_components": [ "username", "password", "port" ],
     "expected_match": {
@@ -1011,38 +991,28 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [ "https://example.com/foo/bar/baz" ],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [ "https://other.com/foo/bar" ],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [ "http://other.com/foo/bar" ],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [{ "pathname": "/foo/bar", "baseURL": "https://example.com" }],
     "exactly_empty_components": [ "username", "password", "port" ],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [{ "pathname": "/foo/bar",
                  "baseURL": "https://example.com?query#hash" }],
     "exactly_empty_components": [ "username", "password", "port" ],
@@ -1055,60 +1025,54 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [{ "pathname": "/foo/bar/baz",
                  "baseURL": "https://example.com" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [{ "pathname": "/foo/bar", "baseURL": "https://other.com" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/bar",
-                 "baseURL": "https://example.com?query#hash", 
-                 "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/bar", "baseURL": "https://example.com?query#hash"}, { "ignoreCase": true }],
     "inputs": [{ "pathname": "/foo/bar", "baseURL": "http://example.com" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/baR" }],
     "expected_match": {
       "pathname": { "input": "/fOo/baR", "groups": { "bar": "baR" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/([^\\/]+?)", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/([^\\/]+?)"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/baR" }],
     "expected_match": {
       "pathname": { "input": "/fOo/baR", "groups": { "0": "baR" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/:baR", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:baR"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/index.html" }],
     "expected_match": {
       "pathname": { "input": "/fOo/index.html", "groups": { "baR": "index.html" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/baR" }],
     "expected_obj": {
       "pathname": "/foo/*"
@@ -1118,14 +1082,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/baR" }],
     "expected_match": {
       "pathname": { "input": "/fOo/baR", "groups": { "0": "baR" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/baR/Baz" }],
     "expected_obj": {
       "pathname": "/foo/*"
@@ -1135,14 +1099,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo/bar/baz" }],
     "expected_match": {
       "pathname": { "input": "/Foo/bar/baz", "groups": { "0": "bar/baz" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo/" }],
     "expected_obj": {
       "pathname": "/foo/*"
@@ -1152,14 +1116,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/FOO/" }],
     "expected_match": {
       "pathname": { "input": "/FOO/", "groups": { "0": "" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_obj": {
       "pathname": "/foo/*"
@@ -1167,45 +1131,45 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar(.*)", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar(.*)"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/bar" }],
     "expected_match": {
       "pathname": { "input": "/fOo/bar", "groups": { "bar": "bar" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar(.*)", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar(.*)"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foO/bar/baz" }],
     "expected_match": {
       "pathname": { "input": "/foO/bar/baz", "groups": { "bar": "bar/baz" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar(.*)", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar(.*)"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/" }],
     "expected_match": {
       "pathname": { "input": "/fOo/", "groups": { "bar": "" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar(.*)", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar(.*)"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo/bar" }],
     "expected_match": {
       "pathname": { "input": "/Foo/bar", "groups": { "bar": "bar" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo" }],
     "//": "The `null` below is translated to undefined in the test harness.",
     "expected_match": {
@@ -1213,65 +1177,65 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foobar" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/Foo/:bar+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/:bar+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar" }],
     "expected_match": {
       "pathname": { "input": "/foo/bar", "groups": { "bar": "bar" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/Foo/:bar+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/:bar+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_match": {
       "pathname": { "input": "/foo/bar/baz", "groups": { "bar": "bar/baz" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foobar" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/Foo/:bar*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/:bar*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/bar" }],
     "expected_match": {
       "pathname": { "input": "/fOo/bar", "groups": { "bar": "bar" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/FoO/:bar*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/FoO/:bar*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_match": {
       "pathname": { "input": "/foo/bar/baz", "groups": { "bar": "bar/baz" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/Foo/:bar*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/:bar*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "//": "The `null` below is translated to undefined in the test harness.",
     "expected_match": {
@@ -1279,17 +1243,17 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/:bar*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/:bar*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foobar" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/bar" }],
     "expected_obj": {
       "pathname": "/foo/*?"
@@ -1299,14 +1263,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/*?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/bar" }],
     "expected_match": {
       "pathname": { "input": "/fOo/bar", "groups": { "0": "bar" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/bar/baz" }],
     "expected_obj": {
       "pathname": "/foo/*?"
@@ -1316,14 +1280,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/Foo/*?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/*?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_match": {
       "pathname": { "input": "/foo/bar/baz", "groups": { "0": "bar/baz" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/Foo/(.*)?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/(.*)?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_obj": {
       "pathname": "/Foo/*?"
@@ -1334,7 +1298,7 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/*?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo" }],
     "//": "The `null` below is translated to undefined in the test harness.",
     "expected_match": {
@@ -1342,7 +1306,7 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/" }],
     "expected_obj": {
       "pathname": "/foo/*?"
@@ -1352,14 +1316,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/*?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/" }],
     "expected_match": {
       "pathname": { "input": "/fOo/", "groups": { "0": "" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foobar" }],
     "expected_obj": {
       "pathname": "/foo/*?"
@@ -1367,12 +1331,12 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/*?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foobar" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fo" }],
     "expected_obj": {
       "pathname": "/foo/*?"
@@ -1380,12 +1344,12 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/*?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fo" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/bar" }],
     "expected_obj": {
       "pathname": "/foo/*+"
@@ -1395,14 +1359,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/*+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/bar" }],
     "expected_match": {
       "pathname": { "input": "/fOo/bar", "groups": { "0": "bar" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/Foo/(.*)+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/(.*)+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo/bar/baz" }],
     "expected_obj": {
       "pathname": "/Foo/*+"
@@ -1412,14 +1376,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/*+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo/bar/baz" }],
     "expected_match": {
       "pathname": { "input": "/fOo/bar/baz", "groups": { "0": "bar/baz" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_obj": {
       "pathname": "/foo/*+"
@@ -1427,12 +1391,12 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/*+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foO/(.*)+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foO/(.*)+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_obj": {
       "pathname": "/foO/*+"
@@ -1442,14 +1406,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foO/*+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foO/*+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_match": {
       "pathname": { "input": "/foo/", "groups": { "0": "" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foobar" }],
     "expected_obj": {
       "pathname": "/foo/*+"
@@ -1457,12 +1421,12 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/*+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foobar" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fo" }],
     "expected_obj": {
       "pathname": "/foo/*+"
@@ -1470,12 +1434,12 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/*+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/*+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fo" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foO/(.*)*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foO/(.*)*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foO/baR" }],
     "expected_obj": {
       "pathname": "/foO/**"
@@ -1485,14 +1449,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/Foo/**", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/**"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar" }],
     "expected_match": {
       "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/Foo/(.*)*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/(.*)*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_obj": {
       "pathname": "/Foo/**"
@@ -1502,14 +1466,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/**", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/**"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foO/bar/baz" }],
     "expected_match": {
       "pathname": { "input": "/foO/bar/baz", "groups": { "0": "bar/baz" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/Foo/(.*)*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/Foo/(.*)*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_obj": {
       "pathname": "/Foo/**"
@@ -1520,7 +1484,7 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/**", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/**"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo" }],
     "//": "The `null` below is translated to undefined in the test harness.",
     "expected_match": {
@@ -1528,7 +1492,7 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foO/(.*)*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foO/(.*)*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_obj": {
       "pathname": "/foO/**"
@@ -1538,14 +1502,14 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foO/**", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foO/**"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_match": {
       "pathname": { "input": "/foo/", "groups": { "0": "" } }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foobar" }],
     "expected_obj": {
       "pathname": "/foo/**"
@@ -1553,12 +1517,12 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/**", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/**"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foobar" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/(.*)*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/(.*)*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fo" }],
     "expected_obj": {
       "pathname": "/foo/**"
@@ -1566,12 +1530,12 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo/**", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo/**"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fo" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foO/baR" }],
     "expected_obj": {
       "pathname": "/foo/bar"
@@ -1581,7 +1545,7 @@
     }
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_obj": {
       "pathname": "/foo/bar"
@@ -1589,7 +1553,7 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_obj": {
       "pathname": "/foo/bar"
@@ -1597,7 +1561,7 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_obj": {
       "pathname": "/foo/bar"
@@ -1605,86 +1569,86 @@
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo/bAr" }],
     "expected_match": {
       "pathname": { "input": "/Foo/bAr", "groups": {} }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/fOo" }],
     "expected_match": {
       "pathname": { "input": "/fOo", "groups": {} }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}?", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}?"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo/bar" }],
     "expected_match": {
       "pathname": { "input": "/Foo/bar", "groups": {} }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo/bAr/baR" }],
     "expected_match": {
       "pathname": { "input": "/Foo/bAr/baR", "groups": {} }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}+", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}+"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foO/Bar" }],
     "expected_match": {
       "pathname": { "input": "/foO/Bar", "groups": {} }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo/bAr/baR" }],
     "expected_match": {
       "pathname": { "input": "/Foo/bAr/baR", "groups": {} }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/bar/baz" }],
     "expected_match": null
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/Foo" }],
     "expected_match": {
       "pathname": { "input": "/Foo", "groups": {} }
     }
   },
   {
-    "pattern": [{ "pathname": "/foo{/bar}*", "caseSensitivePath": false }],
+    "pattern": [{ "pathname": "/foo{/bar}*"}, {"ignoreCase": true}],
     "inputs": [{ "pathname": "/foo/" }],
     "expected_match": null
   },
@@ -1760,10 +1724,24 @@
     }
   },
   {
+    "pattern": [{ "search": "q1=:café" }, {"ignoreCase": true}],
+    "inputs": [{ "search": "Q1=foo" }],
+    "expected_match": {
+      "search": { "input": "Q1=foo", "groups": { "café": "foo" } }
+    }
+  },
+  {
     "pattern": [{ "hash": ":café" }],
     "inputs": [{ "hash": "foo" }],
     "expected_match": {
       "hash": { "input": "foo", "groups": { "café": "foo" } }
+    }
+  },
+  {
+    "pattern": [{ "hash": "bar-:café" }, {"ignoreCase": true}],
+    "inputs": [{ "hash": "BaR-foo" }],
+    "expected_match": {
+      "hash": { "input": "BaR-foo", "groups": { "café": "foo" } }
     }
   },
   {
@@ -2354,6 +2332,25 @@
       "pathname": { "input": "/foo", "groups": {} },
       "search": { "input": "bar", "groups": {} },
       "hash": { "input": "baz", "groups": {} }
+    }
+  },
+  {
+    "pattern": [ "/foo?bar#baz", "https://example.com:8080", {"ignoreCase": true} ],
+    "inputs": [{ "pathname": "/Foo", "search": "bAr", "hash": "baZ",
+                 "baseURL": "https://example.com:8080" }],
+    "exactly_empty_components": [ "username", "password" ],
+    "expected_obj": {
+      "pathname": "/foo",
+      "search": "bar",
+      "hash": "baz"
+    },
+    "expected_match": {
+      "protocol": { "input": "https", "groups": {} },
+      "hostname": { "input": "example.com", "groups": {} },
+      "port": { "input": "8080", "groups": {} },
+      "pathname": { "input": "/Foo", "groups": {} },
+      "search": { "input": "bAr", "groups": {} },
+      "hash": { "input": "baZ", "groups": {} }
     }
   },
   {
