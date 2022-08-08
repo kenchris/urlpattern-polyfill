@@ -6,3 +6,5 @@ declare global {
   type URLPatternResult = Types.URLPatternResult;
   type URLPatternComponentResult = Types.URLPatternComponentResult;
 }
+
+export const URLPattern: Types.URLPattern;
