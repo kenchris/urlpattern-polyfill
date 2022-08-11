@@ -1,6 +1,6 @@
 {
   "name": "urlpattern-polyfill",
-  "version": "5.0.5",
+  "version": "5.0.6",
   "description": "Polyfill for the URLPattern API",
   "repository": {
     "type": "git",
