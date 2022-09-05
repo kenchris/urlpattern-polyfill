@@ -1,6 +1,6 @@
 {
   "name": "urlpattern-polyfill",
-  "version": "5.0.7",
+  "version": "5.0.6",
   "description": "Polyfill for the URLPattern API",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
       "require": "./dist/urlpattern.cjs"
     },
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/index.d.ts",      
       "import": "./index.js",
       "require": "./index.cjs"
     }
@@ -125,6 +125,12 @@
     },
     "publish-dev": {
       "command": "VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
+      "dependencies": [
+        "test"
+      ]
+    },
+    "publish-prod": {
+      "command": "npm version patch && npm publish --tag dev",
       "dependencies": [
         "test"
       ]
