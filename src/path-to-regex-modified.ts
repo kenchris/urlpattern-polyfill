@@ -3,16 +3,16 @@
  */
 export interface LexToken {
   type:
-    | "OPEN"
-    | "CLOSE"
-    | "PATTERN"
-    | "NAME"
-    | "CHAR"
-    | "ESCAPED_CHAR"
-    | "MODIFIER"
-    | "ASTERISK"
-    | "INVALID_CHAR"
-    | "END";
+  | "OPEN"
+  | "CLOSE"
+  | "PATTERN"
+  | "NAME"
+  | "CHAR"
+  | "ESCAPED_CHAR"
+  | "MODIFIER"
+  | "ASTERISK"
+  | "INVALID_CHAR"
+  | "END";
   index: number;
   value: string;
 }
@@ -194,7 +194,7 @@ export interface ParseOptions {
 export function parse(str: string, options: ParseOptions = {}): Token[] {
   const tokens = lexer(str);
   const { prefixes = "./" } = options;
-  const defaultPattern = `[^${escapeString(options.delimiter ?? "/#?")}]+?`;
+  const defaultPattern = `[^${escapeString(options.delimiter === undefined ? "/#?" : options.delimiter)}]+?`;
   const result: Token[] = [];
   let key = 0;
   let i = 0;
@@ -636,8 +636,8 @@ export function tokensToRegexp(
     end = true,
     encode = (x: string) => x,
   } = options;
-  const endsWith = `[${escapeString(options.endsWith ?? "")}]|$`;
-  const delimiter = `[${escapeString(options.delimiter ?? "/#?")}]`;
+  const endsWith = `[${escapeString(options.endsWith === undefined ? "" : options.endsWith)}]|$`;
+  const delimiter = `[${escapeString(options.delimiter === undefined ? "/#?" : options.delimiter)}]`;
   let route = start ? "^" : "";
 
   // Iterate over the tokens and create our regexp string.
@@ -681,7 +681,7 @@ export function tokensToRegexp(
       typeof endToken === "string"
         ? delimiter.indexOf(endToken[endToken.length - 1]) > -1
         : // tslint:disable-next-line
-          endToken === undefined;
+        endToken === undefined;
 
     if (!strict) {
       route += `(?:${delimiter}(?=${endsWith}))?`;
