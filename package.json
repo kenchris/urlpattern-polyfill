@@ -130,7 +130,7 @@
       ]
     },
     "publish-prod": {
-      "command": "npm version patch && npm publish --tag dev",
+      "command": "npm version patch && npm publish",
       "dependencies": [
         "test"
       ]
