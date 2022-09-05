@@ -1,6 +1,6 @@
 {
   "name": "urlpattern-polyfill",
-  "version": "5.0.6",
+  "version": "5.0.7",
   "description": "Polyfill for the URLPattern API",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
       "require": "./dist/urlpattern.cjs"
     },
     ".": {
-      "types": "./dist/index.d.ts",      
+      "types": "./dist/index.d.ts",
       "import": "./index.js",
       "require": "./index.cjs"
     }
