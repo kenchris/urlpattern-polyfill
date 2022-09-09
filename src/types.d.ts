@@ -18,15 +18,15 @@ export declare class URLPattern {
 }
 
 interface URLPatternInit {
-  baseURL?: string;
+  protocol?: string;
   username?: string;
   password?: string;
-  protocol?: string;
   hostname?: string;
   port?: string;
   pathname?: string;
   search?: string;
   hash?: string;
+  baseURL?: string;
 }
 
 export interface URLPatternResult {
