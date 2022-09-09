@@ -17,7 +17,7 @@ export declare class URLPattern {
   readonly hash: string;
 }
 
-interface URLPatternInit {
+export interface URLPatternInit {
   protocol?: string;
   username?: string;
   password?: string;
