@@ -1,5 +1,5 @@
 import { ParseOptions, parse, Token, tokensToRegexp, TokensToRegexpOptions } from './path-to-regex-modified';
-import { URLPatternResult, URLPatternInit, URLPatternKeys } from './url-pattern.interfaces';
+import { URLPatternResult, URLPatternInit, URLPatternKeys, URLPatternOptions } from './url-pattern.interfaces';
 import {
   DEFAULT_OPTIONS,
   HOSTNAME_OPTIONS,
@@ -307,23 +307,27 @@ export class URLPattern {
   private keys: any = {};
   private component_pattern: any = {};
 
-  constructor(init: URLPatternInit | string = {}, baseURL?: string) {
+  constructor(init: URLPatternInit | string, baseURL?: string);
+  constructor(init: URLPatternInit | string, options?: URLPatternOptions);
+  constructor(init: URLPatternInit | string, baseURL?: string, options?: URLPatternOptions);
+  constructor(init: URLPatternInit | string = {}, baseURLOrOptions?: string | URLPatternOptions, options?: URLPatternOptions) {
     try {
+      const hasBaseUrl = typeof baseURLOrOptions === 'string';
       // shorthand
       if (typeof init === 'string') {
         const parser = new Parser(init);
         parser.parse();
         init = parser.result;
-        if (baseURL) {
-          if (typeof baseURL === 'string') {
-            init.baseURL = baseURL;
+        if (baseURLOrOptions) {
+          if (hasBaseUrl) {
+            init.baseURL = baseURLOrOptions;
           } else {
             throw new TypeError(`'baseURL' parameter is not of type 'string'.`);
           }
         } else if (typeof init.protocol !== 'string') {
           throw new TypeError(`A base URL must be provided for a relative constructor string.`);
         }
-      } else if (baseURL) {
+      } else if (hasBaseUrl) {
         throw new TypeError(`parameter 1 is not of type 'string'.`);
       }
 
@@ -332,7 +336,15 @@ export class URLPattern {
         throw new TypeError(`parameter 1 is not of type 'string' and cannot convert to dictionary.`);
       }
 
-      const defaults = {
+      if (baseURLOrOptions != null && typeof baseURLOrOptions === 'object' && options == null) {
+        options = baseURLOrOptions;
+      }
+      if (options == null) {
+        options = { ignoreCase: false };
+      }
+      const ignoreCaseOptions = { ignoreCase: options.ignoreCase === true };
+
+      const defaults: URLPatternInit = {
         pathname: DEFAULT_PATTERN,
         protocol: DEFAULT_PATTERN,
         username: DEFAULT_PATTERN,
@@ -386,19 +398,19 @@ export class URLPattern {
             break;
           case 'pathname':
             if (isSpecialScheme(this.regexp.protocol)) {
-              Object.assign(options, PATHNAME_OPTIONS);
+              Object.assign(options, PATHNAME_OPTIONS, ignoreCaseOptions);
               options.encodePart = standardURLPathnameEncodeCallback;
             } else {
-              Object.assign(options, DEFAULT_OPTIONS);
+              Object.assign(options, DEFAULT_OPTIONS, ignoreCaseOptions);
               options.encodePart = pathURLPathnameEncodeCallback;
             }
             break;
           case 'search':
-            Object.assign(options, DEFAULT_OPTIONS);
+            Object.assign(options, DEFAULT_OPTIONS, ignoreCaseOptions);
             options.encodePart = searchEncodeCallback;
             break;
           case 'hash':
-            Object.assign(options, DEFAULT_OPTIONS);
+            Object.assign(options, DEFAULT_OPTIONS, ignoreCaseOptions);
             options.encodePart = hashEncodeCallback;
             break;
         }
@@ -447,8 +459,8 @@ export class URLPattern {
       return false;
     }
 
-    let component: URLPatternKeys
-    for (component in this.pattern) {
+    let component: URLPatternKeys;
+    for (component of COMPONENTS) {
       if (!this.regexp[component].exec(values[component])) {
         return false;
       }
@@ -496,7 +508,7 @@ export class URLPattern {
     }
 
     let component: URLPatternKeys;
-    for (component in this.pattern) {
+    for (component of COMPONENTS) {
       let match = this.regexp[component].exec(values[component]);
       if (!match) {
         return null;
