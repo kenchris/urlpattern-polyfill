@@ -307,41 +307,38 @@ export class URLPattern {
   private keys: any = {};
   private component_pattern: any = {};
 
-  constructor(init: URLPatternInit | string, baseURL?: string);
-  constructor(init: URLPatternInit | string, options?: URLPatternOptions);
   constructor(init: URLPatternInit | string, baseURL?: string, options?: URLPatternOptions);
+  constructor(init: URLPatternInit | string, options?: URLPatternOptions);
   constructor(init: URLPatternInit | string = {}, baseURLOrOptions?: string | URLPatternOptions, options?: URLPatternOptions) {
     try {
-      const hasBaseUrl = typeof baseURLOrOptions === 'string';
-      // shorthand
+      let baseURL = undefined;
+      if (typeof baseURLOrOptions === 'string') {
+        baseURL = baseURLOrOptions;
+      } else {
+        options = baseURLOrOptions;
+      }
+
       if (typeof init === 'string') {
         const parser = new Parser(init);
         parser.parse();
         init = parser.result;
-        if (baseURLOrOptions) {
-          if (hasBaseUrl) {
-            init.baseURL = baseURLOrOptions;
-          } else {
-            throw new TypeError(`'baseURL' parameter is not of type 'string'.`);
-          }
-        } else if (typeof init.protocol !== 'string') {
+        if (baseURL === undefined && typeof init.protocol !== 'string') {
           throw new TypeError(`A base URL must be provided for a relative constructor string.`);
         }
-      } else if (hasBaseUrl) {
-        throw new TypeError(`parameter 1 is not of type 'string'.`);
+        init.baseURL = baseURL;
+      } else {
+        if (!init || typeof init !== 'object') {
+          throw new TypeError(`parameter 1 is not of type 'string' and cannot convert to dictionary.`);
+        }
+        if (baseURL) {
+          throw new TypeError(`parameter 1 is not of type 'string'.`);
+        }
       }
 
-      // no or invalid arguments
-      if (!init || typeof init !== 'object') {
-        throw new TypeError(`parameter 1 is not of type 'string' and cannot convert to dictionary.`);
-      }
-
-      if (baseURLOrOptions != null && typeof baseURLOrOptions === 'object' && options == null) {
-        options = baseURLOrOptions;
-      }
-      if (options == null) {
+      if (typeof options === "undefined") {
         options = { ignoreCase: false };
       }
+
       const ignoreCaseOptions = { ignoreCase: options.ignoreCase === true };
 
       const defaults: URLPatternInit = {
