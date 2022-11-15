@@ -39,7 +39,7 @@
   ],
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
-    "ava": "^4.1.0",
+    "ava": "^5.1.0",
     "esbuild": "^0.14.31",
     "rimraf": "^3.0.2",
     "typescript": "^4.7.2",
@@ -137,5 +137,8 @@
     }
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "braces": "^3.0.2"
+  }
 }
