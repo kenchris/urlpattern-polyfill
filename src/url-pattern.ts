@@ -63,6 +63,14 @@ function extractValues(url: string, baseURL?: string): URLPatternInit {
   };
 }
 
+function processBaseURLString(input: string, isPattern: boolean) {
+  if (!isPattern) {
+    return input;
+  }
+
+  return escapePatternString(input);
+}
+
 // A utility method that takes a URLPatternInit, splits it apart, and applies
 // the individual component values in the given set of strings.  The strings
 // are only applied if a value is present in the init structure.
@@ -77,14 +85,14 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
   if (typeof init.baseURL === 'string') {
     try {
       baseURL = new URL(init.baseURL);
-      o.protocol = baseURL.protocol ? baseURL.protocol.substring(0, baseURL.protocol.length - 1) : '';
-      o.username = baseURL.username;
-      o.password = baseURL.password;
-      o.hostname = baseURL.hostname;
-      o.port = baseURL.port;
-      o.pathname = baseURL.pathname;
-      o.search = baseURL.search ? baseURL.search.substring(1, baseURL.search.length) : '';
-      o.hash = baseURL.hash ? baseURL.hash.substring(1, baseURL.hash.length) : '';
+      o.protocol = processBaseURLString(baseURL.protocol.substring(0, baseURL.protocol.length - 1), isPattern);
+      o.username = processBaseURLString(baseURL.username, isPattern);
+      o.password = processBaseURLString(baseURL.password, isPattern);
+      o.hostname = processBaseURLString(baseURL.hostname, isPattern);
+      o.port = processBaseURLString(baseURL.port, isPattern);
+      o.pathname = processBaseURLString(baseURL.pathname, isPattern);
+      o.search = processBaseURLString(baseURL.search.substring(1, baseURL.search.length), isPattern);
+      o.hash = processBaseURLString(baseURL.hash.substring(1, baseURL.hash.length), isPattern);
     } catch {
       throw new TypeError(`invalid baseURL '${init.baseURL}'.`);
     }
@@ -124,7 +132,7 @@ function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean):
       if (slashIndex >= 0) {
         // Extract the baseURL path up to and including the first slash.
         // Append the relative init pathname to it.
-        o.pathname = baseURL.pathname.substring(0, slashIndex + 1) + o.pathname;
+        o.pathname = processBaseURLString(baseURL.pathname.substring(0, slashIndex + 1), isPattern) + o.pathname;
       }
     }
     o.pathname = canonicalizePathname(o.pathname, o.protocol, isPattern);
