@@ -35,7 +35,7 @@ import "urlpattern-polyfill";
  * In case you want to replace an existing implementation with the polyfill:
  */
 import {URLPattern} from "urlpattern-polyfill";
-globalThis.URLPattern = URLPattern
+globalThis.URLPattern = URLPattern;
 ```
 
 ## loading as CommonJs module
@@ -55,8 +55,8 @@ require("urlpattern-polyfill");
 /** 
  * In case you want to replace an existing implementation with the polyfill:
  */
-const {URLPattern} = require("urlpattern-polyfill");;
-globalThis.URLPattern = URLPattern
+const {URLPattern} = require("urlpattern-polyfill");
+globalThis.URLPattern = URLPattern;
 ```
 > ## Note:
 > The line with `// @ts-ignore: Property 'UrlPattern' does not exist ` is needed in some environments because before you load the polyfill it might not be available, and the feature-check in the if statement gives an TypeScript error. The whole idea is that it loads when its not there. 
