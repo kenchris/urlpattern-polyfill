@@ -1,5 +1,5 @@
 import type * as Types from "./types.js";
-export type { URLPattern } from "./types.js";
+export { URLPattern } from "./types.js";
 
 declare global {
   class URLPattern extends Types.URLPattern {}
