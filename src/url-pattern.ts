@@ -1,5 +1,5 @@
-import { ParseOptions, parse, Token, tokensToRegexp, TokensToRegexpOptions } from './path-to-regex-modified';
-import { URLPatternResult, URLPatternInit, URLPatternKeys, URLPatternOptions } from './url-pattern.interfaces';
+import { ParseOptions, Options, parse, Part, PartType, partsToRegexp, Modifier, modifierToString } from './path-to-regex-modified';
+import { URLPatternResult, URLPatternInit, URLPatternKeys, URLPatternOptions, URLPatternComponent } from './url-pattern.interfaces';
 import {
   DEFAULT_OPTIONS,
   HOSTNAME_OPTIONS,
@@ -58,8 +58,8 @@ function extractValues(url: string, baseURL?: string): URLPatternInit {
     hostname: o.hostname,
     port: o.port,
     pathname: o.pathname,
-    search: o.search != '' ? o.search.substring(1, o.search.length) : undefined,
-    hash: o.hash != '' ? o.hash.substring(1, o.hash.length) : undefined,
+    search: o.search !== '' ? o.search.substring(1, o.search.length) : undefined,
+    hash: o.hash !== '' ? o.hash.substring(1, o.hash.length) : undefined,
   };
 }
 
@@ -160,52 +160,51 @@ function escapeRegexpString(value: string): string {
 // A utility function to convert a list of path-to-regexp Tokens back into
 // a pattern string.  The resulting pattern should be equivalent to the
 // original parsed pattern, although they may differ due to canonicalization.
-function tokensToPattern(tokens: Token[],
-  options: TokensToRegexpOptions & ParseOptions): string {
-  const wildcardPattern = ".*";
-  const segmentWildcardPattern =
-    `[^${escapeRegexpString(options.delimiter === undefined ? '/#?' : options.delimiter)}]+?`;
+function partsToPattern(parts: Part[], options: Options & ParseOptions): string {
+  options.delimiter ??=  "/#?";
+  options.prefixes ??= "./";
+  options.sensitive ??= false;
+  options.strict ??= false;
+  options.end ??= true;
+  options.start ??= true;
+  options.endsWith = '';
+
+  const kFullWildcardRegex = ".*";
+  const segmentWildcardRegex = `[^${escapeRegexpString(options.delimiter)}]+?`;
   const regexIdentifierPart = /[$_\u200C\u200D\p{ID_Continue}]/u;
 
   let result = "";
-  for (let i = 0; i < tokens.length; ++i) {
-    const token = tokens[i];
-    const lastToken = i > 0 ? tokens[i - 1] : null;
-    const nextToken: any = i < tokens.length - 1 ? tokens[i + 1] : null;
+  for (let i = 0; i < parts.length; ++i) {
+    const part = parts[i];
 
-    // Plain text tokens can be directly added to the pattern string.
-    if (typeof token === 'string') {
-      result += escapePatternString(token);
-      continue;
-    }
-
-    // Tokens without a pattern are also plain text, but were originally
-    // contained in a `{ ... }` group.  There may be a modifier following
-    // the group.  If there is no modifier then we strip the braces off
-    // as they are superfluous.
-    if (token.pattern === '') {
-      if (token.modifier === '') {
-        result += escapePatternString(token.prefix);
+    if (part.type === PartType.kFixed) {
+      // A simple fixed string part.
+      if (part.modifier === Modifier.kNone) {
+        result += escapePatternString(part.value);
         continue;
       }
-      result += `{${escapePatternString(token.prefix)}}${token.modifier}`;
+
+      // A fixed string, but with a modifier which requires a grouping.
+      // For example, `{foo}?`.
+      result += `{${escapePatternString(part.value)}}${modifierToString(part.modifier)}`;
       continue;
     }
 
     // Determine if the token name was custom or automatically assigned.
-    const customName = typeof token.name !== 'number';
+    const customName = part.hasCustomName();
 
     // Determine if the token needs a grouping like `{ ... }`.  This is
     // necessary when the group:
     //
     // 1. is using a non-automatic prefix or any suffix.
-    const optionsPrefixes = options.prefixes !== undefined ? options.prefixes
-      : "./";
     let needsGrouping =
-      token.suffix !== "" ||
-      (token.prefix !== "" &&
-        (token.prefix.length !== 1 ||
-          !optionsPrefixes.includes(token.prefix)));
+      !!part.suffix.length ||
+      (!!part.prefix.length &&
+        (part.prefix.length !== 1 ||
+          !options.prefixes.includes(part.prefix)));
+
+    const lastPart = i > 0 ? parts[i - 1] : null;
+    const nextPart: any = i < parts.length - 1 ? parts[i + 1] : null;
 
     // 2. following by a matching group that may be expressed in a way that can
     //    be mistakenly interpreted as part of the matching group.  For
@@ -217,14 +216,14 @@ function tokensToPattern(tokens: Token[],
     //       could be mistakenly interpreted as part of the name.  We want to
     //       output `{:foo}bar` and not `:foobar`.
     if (!needsGrouping && customName &&
-      token.pattern === segmentWildcardPattern &&
-      token.modifier === "" && nextToken && !nextToken.prefix &&
-      !nextToken.suffix) {
-      if (typeof nextToken === "string") {
-        const code = nextToken.length > 0 ? nextToken[0] : "";
+      part.type === PartType.kSegmentWildcard &&
+      part.modifier === Modifier.kNone && nextPart && !nextPart.prefix.length &&
+      !nextPart.suffix.length) {
+      if (nextPart.type === PartType.kFixed) {
+        const code = nextPart.value.length > 0 ? nextPart.value[0] : "";
         needsGrouping = regexIdentifierPart.test(code);
       } else {
-        needsGrouping = typeof nextToken.name === "number";
+        needsGrouping = !nextPart.hasCustomName();
       }
     }
 
@@ -233,10 +232,10 @@ function tokensToPattern(tokens: Token[],
     //    an escape or grouping to prevent the implicit prefix; e.g.
     //    `\\/*` or `/{*}`.  In these cases we use a grouping to prevent the
     //    implicit prefix in the generated string.
-    if (!needsGrouping && token.prefix === "" && lastToken &&
-      typeof lastToken === "string" && lastToken.length > 0) {
-      const code = lastToken[lastToken.length - 1];
-      needsGrouping = optionsPrefixes.includes(code);
+    if (!needsGrouping && !part.prefix.length && lastPart &&
+      lastPart.type === PartType.kFixed) {
+      const code = lastPart.value[lastPart.value.length - 1];
+      needsGrouping = options.prefixes.includes(code);
     }
 
     // This is a full featured token.  We must generate a string that looks
@@ -250,39 +249,41 @@ function tokensToPattern(tokens: Token[],
       result += '{';
     }
 
-    result += escapePatternString(token.prefix);
+    result += escapePatternString(part.prefix);
 
     if (customName) {
-      result += `:${token.name}`;
+      result += `:${part.name}`;
     }
 
-    if (token.pattern === wildcardPattern) {
-      // We can only use the `*` wildcard card if we meet a number of
-      // conditions.  We must use an explicit `(.*)` group if:
+    if (part.type === PartType.kRegex) {
+      result += `(${part.value})`;
+    } else if (part.type === PartType.kSegmentWildcard) {
+      // We only need to emit a regexp if a custom name was
+      // not specified.  A custom name like `:foo` gets the
+      // kSegmentWildcard type automatically.
+      if (!customName) {
+        result += `(${segmentWildcardRegex})`;
+      }
+    } else if (part.type === PartType.kFullWildcard) {
+      // We can only use the `*` wildcard card if we meet a number
+      // of conditions.  We must use an explicit `(.*)` group if:
       //
       // 1. A custom name was used; e.g. `:foo(.*)`.
       // 2. If the preceding group is a matching group without a modifier; e.g.
       //    `(foo)(.*)`.  In that case we cannot emit the `*` shorthand without
       //    it being mistakenly interpreted as the modifier for the previous
       //    group.
-      if (!customName && (!lastToken ||
-        typeof lastToken === 'string' ||
-        lastToken.modifier ||
+      // 3. The current group is not enclosed in a `{ }` grouping.
+      // 4. The current group does not have an implicit prefix like `/`.
+      if (!customName && (!lastPart ||
+        lastPart.type === PartType.kFixed ||
+        lastPart.modifier !== Modifier.kNone ||
         needsGrouping ||
-        token.prefix !== "")) {
-        result += '*';
+        part.prefix !== "")) {
+        result += "*";
       } else {
-        result += `(${wildcardPattern})`;
+        result += `(${kFullWildcardRegex})`;
       }
-    } else if (token.pattern === segmentWildcardPattern) {
-      // We only need to emit a regexp if a custom name was
-      // not specified.  A custom name like `:foo` gets the
-      // kSegmentWildcard type automatically.
-      if (!customName) {
-        result += `(${segmentWildcardPattern})`;
-      }
-    } else {
-      result += `(${token.pattern})`;
     }
 
     // If the matching group is a simple `:foo` custom name with the default
@@ -290,20 +291,22 @@ function tokensToPattern(tokens: Token[],
     // be interpreted as a trailing part of the name itself.  In these cases
     // we must escape the beginning of the suffix in order to separate it
     // from the end of the custom name; e.g. `:foo\\bar` instead of `:foobar`.
-    if (token.pattern === segmentWildcardPattern && customName &&
-      token.suffix !== "") {
-      if (regexIdentifierPart.test(token.suffix[0])) {
+    if (part.type === PartType.kSegmentWildcard && customName &&
+      !!part.suffix.length) {
+      if (regexIdentifierPart.test(part.suffix[0])) {
         result += '\\';
       }
     }
 
-    result += escapePatternString(token.suffix);
+    result += escapePatternString(part.suffix);
 
     if (needsGrouping) {
       result += '}';
     }
 
-    result += token.modifier;
+    if (part.modifier !== Modifier.kNone) {
+      result += modifierToString(part.modifier);
+    }
   }
 
   return result;
@@ -312,7 +315,7 @@ function tokensToPattern(tokens: Token[],
 export class URLPattern {
   private pattern: URLPatternInit;
   private regexp: any = {};
-  private keys: any = {};
+  private names: string[] = {};
   private component_pattern: any = {};
 
   constructor(init: URLPatternInit | string, baseURL?: string, options?: URLPatternOptions);
@@ -373,9 +376,9 @@ export class URLPattern {
       for (component of COMPONENTS) {
         if (!(component in this.pattern))
           continue;
-        const options: TokensToRegexpOptions & ParseOptions = {};
+        const options: Options & ParseOptions = {};
         const pattern = this.pattern[component];
-        this.keys[component] = [];
+        this.names[component] = [];
         switch (component) {
           case 'protocol':
             Object.assign(options, DEFAULT_OPTIONS);
@@ -420,10 +423,10 @@ export class URLPattern {
             break;
         }
         try {
-          const tokens = parse(pattern as string, options);
-          this.regexp[component] = tokensToRegexp(tokens, this.keys[component], options);
-          this.component_pattern[component] = tokensToPattern(tokens, options);
-        } catch {
+          const parts = parse(pattern as string, options);
+          this.regexp[component] = partsToRegexp(parts, /* out */ this.names[component], options);
+          this.component_pattern[component] = partsToPattern(parts, options);
+        } catch (err) {
           // If a pattern is illegal the constructor will throw an exception
           throw new TypeError(`invalid ${component} pattern '${this.pattern[component]}'.`);
         }
@@ -520,20 +523,24 @@ export class URLPattern {
       }
 
       let groups = {} as Array<string>;
-      for (let [i, key] of this.keys[component].entries()) {
-        if (typeof key.name === 'string' || typeof key.name === 'number') {
+      for (let [i, name] of this.names[component].entries()) {
+        if (typeof name === 'string' || typeof name === 'number') {
           let value = match[i + 1];
-          groups[key.name] = value;
+          groups[name] = value;
         }
       }
 
       result[component] = {
-        input: values[component] || '',
+        input: values[component] ?? '',
         groups,
       };
     }
 
     return result;
+  }
+
+  static compareComponent(component: URLPatternComponent, left: URLPattern, right: URLPattern) : Number {
+
   }
 
   public get protocol() {

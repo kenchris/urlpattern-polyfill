@@ -38,8 +38,8 @@
     "index.cjs"
   ],
   "devDependencies": {
-    "@ava/typescript": "^3.0.1",
-    "ava": "^5.1.0",
+    "@ava/typescript": "^4.0.0",
+    "ava": "^5.2.0",
     "esbuild": "^0.14.31",
     "rimraf": "^3.0.2",
     "typescript": "^4.7.2",
@@ -61,6 +61,7 @@
     "build:esm": "wireit",
     "build:cjs": "wireit",
     "build": "wireit",
+    "sync-wpt": "wireit",
     "copyTypeFiles": "wireit",
     "prepFakeNodeModules": "wireit",
     "test": "wireit",
@@ -106,8 +107,14 @@
     "prepFakeNodeModules": {
       "command": "rm -rf node_modules/urlpattern-polyfill; ln -s $(pwd) node_modules/urlpattern-polyfill"
     },
+    "sync-wpt": {
+      "command": "cd test && wget http://wpt.live/urlpattern/resources/urlpatterntestdata.json",
+      "dependencies": [
+        "test"
+      ]
+    }, 
     "test": {
-      "command": "ava --fail-fast -s",
+      "command": "ava --fail-fast --timeout=60s",
       "watch": "test/**/*",
       "files": [
         "test/**/*"

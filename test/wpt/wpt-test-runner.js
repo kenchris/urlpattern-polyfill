@@ -12,6 +12,8 @@ export function runTests(data, test) {
     'hash',
   ];
 
+  RegExp.prototype.toJSON = RegExp.prototype.toString;
+
   for (let entry of data) {
     test(`Test data ${i++}: Pattern: ${JSON.stringify(entry.pattern)} Inputs: ${JSON.stringify(entry.inputs)}`, t => {
       if (entry.expected_obj === 'error') {
@@ -90,7 +92,7 @@ export function runTests(data, test) {
       // First, validate the test() method by converting the expected result to
       // a truthy value.
       t.is(pattern.test(...entry.inputs), !!entry.expected_match,
-            'test() result');
+            'test() result' + JSON.stringify(pattern, null, 2));
 
       // Next, start validating the exec() method.
       const exec_result = pattern.exec(...entry.inputs);

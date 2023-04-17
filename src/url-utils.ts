@@ -1,8 +1,8 @@
-import {ParseOptions, TokensToRegexpOptions} from './path-to-regex-modified';
+import {ParseOptions, Options} from './path-to-regex-modified';
 
 // default to strict mode and case sensitivity.  In addition, most
 // components have no concept of a delimiter or prefix character.
-export const DEFAULT_OPTIONS: TokensToRegexpOptions & ParseOptions = {
+export const DEFAULT_OPTIONS: Options & ParseOptions = {
   delimiter: '',
   prefixes: '',
   sensitive: true,
@@ -14,7 +14,7 @@ export const DEFAULT_OPTIONS: TokensToRegexpOptions & ParseOptions = {
 // by default.  Note, hostnames are case insensitive but we require case
 // sensitivity here.  This assumes that the hostname values have already
 // been normalized to lower case as in URL().
-export const HOSTNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
+export const HOSTNAME_OPTIONS: Options & ParseOptions = {
   delimiter: '.',
   prefixes: '',
   sensitive: true,
@@ -25,7 +25,7 @@ export const HOSTNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
 // "/" delimiter controlling how far a named group like ":bar" will match
 // by default.  It also configures "/" to be treated as an automatic
 // prefix before groups.
-export const PATHNAME_OPTIONS: TokensToRegexpOptions & ParseOptions = {
+export const PATHNAME_OPTIONS: Options & ParseOptions = {
   delimiter: '/',
   prefixes: '/',
   sensitive: true,
