@@ -3,7 +3,7 @@
 //  https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/url_pattern/url_pattern_parser.h;l=36;drc=f66c35e3c41629675130001dbce0dcfba870160b
 //
 
-import {lexer, LexToken, pathToRegexp, ParseOptions, TokensToRegexpOptions} from './path-to-regex-modified';
+import {lexer, LexToken, stringToRegexp, ParseOptions, Options} from './path-to-regex-modified';
 import {URLPatternInit} from './url-pattern.interfaces';
 import {DEFAULT_OPTIONS, protocolEncodeCallback, isSpecialScheme} from './url-utils';
 
@@ -437,7 +437,7 @@ export class Parser {
       return false;
     }
 
-    // We have a `?` tokenized as a modifer.  We only want to treat this as
+    // We have a `?` tokenized as a modifier.  We only want to treat this as
     // the search prefix if it would not normally be valid in a path-to-regexp
     // string.  A modifier must follow a matching group.  Therefore we inspect
     // the preceding token to if the `?` is immediately following a group
@@ -462,7 +462,7 @@ export class Parser {
     // unescaped `?`.
     const previousToken: LexToken = this.safeToken(this.tokenIndex - 1);
     return previousToken.type !== 'NAME' &&
-           previousToken.type !== 'PATTERN' &&
+           previousToken.type !== 'REGEX' &&
            previousToken.type !== 'CLOSE' &&
            previousToken.type !== 'ASTERISK';
   }
@@ -494,10 +494,10 @@ export class Parser {
   }
 
   private computeShouldTreatAsStandardURL(): void {
-    const options: TokensToRegexpOptions & ParseOptions = {};
+    const options: Options & ParseOptions = {};
     Object.assign(options, DEFAULT_OPTIONS);
     options.encodePart = protocolEncodeCallback;
-    const regexp = pathToRegexp(this.makeComponentString(), /*keys=*/undefined, options);
+    const regexp = stringToRegexp(this.makeComponentString(), /*keys=*/undefined, options);
     this.shouldTreatAsStandardURL = isSpecialScheme(regexp);
   }
 }

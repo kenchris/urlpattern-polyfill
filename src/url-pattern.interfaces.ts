@@ -10,6 +10,9 @@ export interface URLPatternInit {
   hash?: string;
 }
 
+type URLPatternComponent = 'protocol' | 'username' | 'password'
+  | 'hostname' | 'port' | 'pathname' | 'search' | 'hash'; 
+
 export type URLPatternKeys = Exclude<keyof URLPatternInit, 'caseSensitivePath'>
 
 export interface URLPatternResult {
