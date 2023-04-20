@@ -1,23 +1,34 @@
-export function runTests(data, test) {
+import test from "ava";
+import { readFileSync } from "fs";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
+import "urlpattern-polyfill";
+
+const kComponents = [
+  'protocol',
+  'username',
+  'password',
+  'hostname',
+  'port',
+  'password',
+  'pathname',
+  'search',
+  'hash',
+];
+
+RegExp.prototype.toJSON = RegExp.prototype.toString;
+
+function runTests(data) {
   let i = 0;
-
-  const kComponents = [
-    'protocol',
-    'username',
-    'password',
-    'hostname',
-    'port',
-    'pathname',
-    'search',
-    'hash',
-  ];
-
-  RegExp.prototype.toJSON = RegExp.prototype.toString;
-
   for (let entry of data) {
-    test(`Test data ${i++}: Pattern: ${JSON.stringify(entry.pattern)} Inputs: ${JSON.stringify(entry.inputs)}`, t => {
+    test(`#${i++}: Pattern: ${JSON.stringify(entry.pattern)} Inputs: ${JSON.stringify(entry.inputs)}`, t => {
+      const assert_throws_js = (type, fn, msg) => t.throws(fn, {instanceOf: type}, msg);
+      const assert_equals = (actual, expected, msg) => t.is(actual, expected, msg);
+      const assert_object_equals = (actual, expected, msg) => t.deepEqual(actual, expected, msg);
+
       if (entry.expected_obj === 'error') {
-        t.throws(_ => new URLPattern(...entry.pattern), {instanceOf: TypeError});
+        assert_throws_js(TypeError, _ => new URLPattern(...entry.pattern),
+                         'URLPattern() constructor');
         return;
       }
 
@@ -35,16 +46,16 @@ export function runTests(data, test) {
         // construction pattern gets canonicalized, etc.
         let expected = entry.expected_obj[component];
 
-        // If there is no explicit expected pattern string, then compue
+        // If there is no explicit expected pattern string, then compute
         // the expected value based on the URLPattern constructor args.
-        if (expected === undefined) {
+        if (expected == undefined) {
           // First determine if there is a baseURL present in the pattern
           // input.  A baseURL can be the source for many component patterns.
           let baseURL = null;
           if (entry.pattern.length > 0 && entry.pattern[0].baseURL) {
             baseURL = new URL(entry.pattern[0].baseURL);
           } else if (entry.pattern.length > 1 &&
-                      typeof entry.pattern[1] === 'string') {
+                     typeof entry.pattern[1] === 'string') {
             baseURL = new URL(entry.pattern[1]);
           }
 
@@ -61,7 +72,7 @@ export function runTests(data, test) {
               entry.exactly_empty_components.includes(component)) {
             expected = '';
           } else if (typeof entry.pattern[0] === 'object' &&
-                      typeof entry.pattern[0][component] === 'string') {
+              entry.pattern[0][component]) {
             expected = entry.pattern[0][component];
           } else if (baseURL) {
             let base_value = baseURL[component];
@@ -79,49 +90,50 @@ export function runTests(data, test) {
 
         // Finally, assert that the compiled object property matches the
         // expected property.
-        t.is(pattern[component], expected,
-              `compiled pattern property '${component}'`);
+        assert_equals(pattern[component], expected,
+                      `compiled pattern property '${component}'`);
       }
 
       if (entry.expected_match === 'error') {
-        t.throws(_ => pattern.test(...entry.inputs), {instanceOf: TypeError});
-        t.throws(_ => pattern.exec(...entry.inputs), {instanceOf: TypeError});
+        assert_throws_js(TypeError, _ => pattern.test(...entry.inputs),
+                         'test() result');
+        assert_throws_js(TypeError, _ => pattern.exec(...entry.inputs),
+                         'exec() result');
         return;
       }
 
       // First, validate the test() method by converting the expected result to
       // a truthy value.
-      t.is(pattern.test(...entry.inputs), !!entry.expected_match,
-            'test() result' + JSON.stringify(pattern, null, 2));
+      assert_equals(pattern.test(...entry.inputs), !!entry.expected_match,
+                    'test() result');
 
       // Next, start validating the exec() method.
       const exec_result = pattern.exec(...entry.inputs);
 
       // On a failed match exec() returns null.
-      if (!entry.expected_match || typeof entry.expected_match !== 'object') {
-        t.is(exec_result, entry.expected_match, 'exec() failed match result');
+      if (!entry.expected_match || typeof entry.expected_match !== "object") {
+        assert_equals(exec_result, entry.expected_match, 'exec() failed match result');
         return;
       }
 
-      if (!entry.expected_match.inputs) {
+      if (!entry.expected_match.inputs)
         entry.expected_match.inputs = entry.inputs;
-      }
 
       // Next verify the result.input is correct.  This may be a structured
       // URLPatternInit dictionary object or a URL string.
-      t.is(exec_result.inputs.length,
-            entry.expected_match.inputs.length,
-            'exec() result.inputs.length');
+      assert_equals(exec_result.inputs.length,
+                    entry.expected_match.inputs.length,
+                    'exec() result.inputs.length');
       for (let i = 0; i < exec_result.inputs.length; ++i) {
         const input = exec_result.inputs[i];
         const expected_input = entry.expected_match.inputs[i];
         if (typeof input === 'string') {
-          t.is(input, expected_input, `exec() result.inputs[${i}]`);
+          assert_equals(input, expected_input, `exec() result.inputs[${i}]`);
           continue;
         }
         for (let component of kComponents) {
-          t.is(input[component], expected_input[component],
-                `exec() result.inputs[${i}}][${component}]`);
+          assert_equals(input[component], expected_input[component],
+                        `exec() result.inputs[${i}][${component}]`);
         }
       }
 
@@ -147,7 +159,6 @@ export function runTests(data, test) {
             expected_obj.groups['0'] = '';
           }
         }
-
         // JSON does not allow us to use undefined directly, so the data file
         // contains null instead.  Translate to the expected undefined value
         // here.
@@ -156,8 +167,14 @@ export function runTests(data, test) {
             expected_obj.groups[key] = undefined;
           }
         }
-        t.deepEqual(exec_result[component], expected_obj, `exec() result for ${component}`);
+        assert_object_equals(exec_result[component], expected_obj,
+                             `exec() result for ${component}`);
       }
-    });
+    }, `Pattern: ${JSON.stringify(entry.pattern)} ` +
+       `Inputs: ${JSON.stringify(entry.inputs)}`);
   }
 }
+
+let path = fileURLToPath(import.meta.url);
+let data = readFileSync(resolve(dirname(path), "urlpatterntestdata.json"));
+runTests(JSON.parse(data));
