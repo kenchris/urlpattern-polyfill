@@ -108,11 +108,8 @@
       "command": "rm -rf node_modules/urlpattern-polyfill; ln -s $(pwd) node_modules/urlpattern-polyfill"
     },
     "sync-wpt": {
-      "command": "cd test && wget http://wpt.live/urlpattern/resources/urlpatterntestdata.json",
-      "dependencies": [
-        "test"
-      ]
-    }, 
+      "command": "cd test && wget http://wpt.live/urlpattern/resources/urlpatterntestdata.json && wget http://wpt.live/urlpattern/resources/urlpattern-compare-test-data.json"
+      },
     "test": {
       "command": "ava --fail-fast --timeout=60s",
       "watch": "test/**/*",
