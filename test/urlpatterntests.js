@@ -16,12 +16,11 @@ const kComponents = [
   'hash',
 ];
 
-RegExp.prototype.toJSON = RegExp.prototype.toString;
-
 function runTests(data) {
   let i = 0;
   for (let entry of data) {
-    test(`#${i++}: Pattern: ${JSON.stringify(entry.pattern)} Inputs: ${JSON.stringify(entry.inputs)}`, t => {
+    test(`Pattern: ${JSON.stringify(entry.pattern)} ` +
+         `Inputs: ${JSON.stringify(entry.inputs)}`, t => {
       const assert_throws_js = (type, fn, msg) => t.throws(fn, {instanceOf: type}, msg);
       const assert_equals = (actual, expected, msg) => t.is(actual, expected, msg);
       const assert_object_equals = (actual, expected, msg) => t.deepEqual(actual, expected, msg);
@@ -170,8 +169,7 @@ function runTests(data) {
         assert_object_equals(exec_result[component], expected_obj,
                              `exec() result for ${component}`);
       }
-    }, `Pattern: ${JSON.stringify(entry.pattern)} ` +
-       `Inputs: ${JSON.stringify(entry.inputs)}`);
+    });
   }
 }
 

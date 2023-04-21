@@ -317,6 +317,7 @@ export class URLPattern {
   private regexp: any = {};
   private names: string[] = {};
   private component_pattern: any = {};
+  private parts: any = {};
 
   constructor(init: URLPatternInit | string, baseURL?: string, options?: URLPatternOptions);
   constructor(init: URLPatternInit | string, options?: URLPatternOptions);
@@ -423,9 +424,9 @@ export class URLPattern {
             break;
         }
         try {
-          const parts = parse(pattern as string, options);
-          this.regexp[component] = partsToRegexp(parts, /* out */ this.names[component], options);
-          this.component_pattern[component] = partsToPattern(parts, options);
+          this.parts[component] = parse(pattern as string, options);
+          this.regexp[component] = partsToRegexp(this.parts[component], /* out */ this.names[component], options);
+          this.component_pattern[component] = partsToPattern(this.parts[component], options);
         } catch (err) {
           // If a pattern is illegal the constructor will throw an exception
           throw new TypeError(`invalid ${component} pattern '${this.pattern[component]}'.`);
@@ -540,7 +541,90 @@ export class URLPattern {
   }
 
   static compareComponent(component: URLPatternComponent, left: URLPattern, right: URLPattern) : Number {
+    const comparePart = (left: Part, right: Part) : Number => {
+      // We prioritize PartType in the ordering so we can favor fixed text.  The
+      // type ordering is:
+      //
+      //  kFixed > kRegex > kSegmentWildcard > kFullWildcard.
+      //
+      // We considered kRegex greater than the wildcards because it is likely to be
+      // used for imposing some constraint and not just duplicating wildcard
+      // behavior.
+      //
+      // This comparison depends on the PartType enum having the
+      // correct corresponding numeric values.
+      //
+      // Next the Modifier is considered:
+      //
+      //  kNone > kOneOrMore > kOptional > kZeroOrMore.
+      //
+      // The rationale here is that requring the match group to exist is more
+      // restrictive then making it optional and requiring an exact count is more
+      // restrictive than repeating.
+      //
+      // This comparison depends on the Modifier enum in liburlpattern having the
+      // correct corresponding numeric values.
+      //
+      // Finally we lexicographically compare the text components from left to
+      // right; `prefix`, `value`, and `suffix`.  It's OK to depend on simple
+      // byte-wise string comparison here because the values have all been URL
+      // encoded.  This guarantees the strings contain only ASCII.
+      for (let attr of ["type", "modifier", "prefix", "value", "suffix"]) {
+        if (left[attr] < right[attr])
+          return -1;
+        else if (left[attr] === right[attr])
+          continue;
+        else
+          return 1;
+      }
+      return 0;
+    }
 
+    const emptyFixedPart: Part = new Part(PartType.kFixed, "", "", "", "", Modifier.kNone);
+    const wildcardOnlyPart: Part = new Part(PartType.kFullWildcard, "", "", "", "", Modifier.kNone);
+
+    const comparePartList = (left: Part[], right: Part[]) : Number => {
+      // Begin by comparing each Part in the lists with each other.  If any
+      // are not equal, then we are done.
+      let i = 0;
+      for (; i < Math.min(left.length, right.length); ++i) {
+        let result = comparePart(left[i], right[i]);
+        if (result) // 1 or -1.
+          return result;
+      }
+
+      // No differences were found, so declare them equal.
+      if (left.length === right.length) {
+        return 0;
+      }
+
+      // We reached the end of at least one of the lists without finding a
+      // difference.  However, we must handle the case where one list is longer
+      // than the other.  In this case we compare the next Part from the
+      // longer list to a synthetically created empty kFixed Part.  This is
+      // necessary in order for "/foo/" to be considered more restrictive, and
+      // therefore greater, than "/foo/*".
+      return comparePart(left[i] ?? emptyFixedPart, right[i] ?? emptyFixedPart);
+    }
+
+    // If both the left and right components are empty wildcards, then they are
+    // effectively equal.
+    if (!left.component_pattern[component] && !right.component_pattern[component]) {
+      return 0;
+    }
+
+    // If one side has a real pattern and the other side is an empty component,
+    // then we have to compare to a part list with a single full wildcard.
+    if (left.component_pattern[component] && !right.component_pattern[component]) {
+      return comparePartList(left.parts[component], [wildcardOnlyPart]);
+    }
+
+    if (!left.component_pattern[component] && right.component_pattern[component]) {
+      return comparePartList([wildcardOnlyPart], right.parts[component]);
+    }
+
+    // Otherwise compare the part lists of the patterns on each side.
+    return comparePartList(left.parts[component], right.parts[component]);
   }
 
   public get protocol() {

@@ -111,7 +111,7 @@
       "command": "cd test && wget http://wpt.live/urlpattern/resources/urlpatterntestdata.json && wget http://wpt.live/urlpattern/resources/urlpattern-compare-test-data.json"
       },
     "test": {
-      "command": "ava --fail-fast --timeout=60s",
+      "command": "ava --timeout=60s",
       "watch": "test/**/*",
       "files": [
         "test/**/*"
