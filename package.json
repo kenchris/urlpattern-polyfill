@@ -1,6 +1,6 @@
 {
   "name": "urlpattern-polyfill",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "Polyfill for the URLPattern API",
   "repository": {
     "type": "git",
@@ -109,7 +109,7 @@
     },
     "sync-wpt": {
       "command": "cd test && wget http://wpt.live/urlpattern/resources/urlpatterntestdata.json && wget http://wpt.live/urlpattern/resources/urlpattern-compare-test-data.json"
-      },
+    },
     "test": {
       "command": "ava --timeout=60s",
       "watch": "test/**/*",
