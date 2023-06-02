@@ -38,6 +38,9 @@ import {URLPattern} from "urlpattern-polyfill";
 globalThis.URLPattern = URLPattern
 ```
 
+> ## Note:
+> The line with `// @ts-ignore: Property 'UrlPattern' does not exist ` is needed in some environments because before you load the polyfill it might not be available, and the feature-check in the if statement gives an TypeScript error. The whole idea is that it loads when its not there. 
+
 ## loading as CommonJs module
 
 ```javascript
@@ -58,8 +61,6 @@ require("urlpattern-polyfill");
 const {URLPattern} = require("urlpattern-polyfill");;
 globalThis.URLPattern = URLPattern
 ```
-> ## Note:
-> The line with `// @ts-ignore: Property 'UrlPattern' does not exist ` is needed in some environments because before you load the polyfill it might not be available, and the feature-check in the if statement gives an TypeScript error. The whole idea is that it loads when its not there. 
 
 > ## Note:
 > No matter how you load the polyfill, when there is no implementation in your environment, it will _always_ add it to the global object.
@@ -225,6 +226,10 @@ encodeURIComponent("?q=æøå")
 new URL("https://ølerlækkernårdetermit.dk").hostname
 // "xn--lerlkkernrdetermit-dubo78a.dk"
 ```
+
+Breaking changes
+===
+- V9.0.0 drops support for NodeJS 14 and lower. NodeJS 15 or higher is required. This is due to using private class fields, so we can have better optimalizations. There is _No_ change in functionality, but we were able to reduce the size of the polyfill by ~2.5KB (~13%), thanks to a pr #118 from @jimmywarting.
 
 Learn more
 ===
