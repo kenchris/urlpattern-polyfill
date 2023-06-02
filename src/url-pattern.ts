@@ -313,11 +313,11 @@ function partsToPattern(parts: Part[], options: Options & ParseOptions): string 
 }
 
 export class URLPattern {
-  private pattern: URLPatternInit;
-  private regexp: any = {};
-  private names: string[] = {};
-  private component_pattern: any = {};
-  private parts: any = {};
+  #pattern: URLPatternInit;
+  #regexp: any = {};
+  #names: string[] = {};
+  #component_pattern: any = {};
+  #parts: any = {};
 
   constructor(init: URLPatternInit | string, baseURL?: string, options?: URLPatternOptions);
   constructor(init: URLPatternInit | string, options?: URLPatternOptions);
@@ -364,10 +364,10 @@ export class URLPattern {
         hash: DEFAULT_PATTERN,
       };
 
-      this.pattern = applyInit(defaults, init, true);
+      this.#pattern = applyInit(defaults, init, true);
 
-      if (defaultPortForProtocol(this.pattern.protocol) === this.pattern.port) {
-        this.pattern.port = '';
+      if (defaultPortForProtocol(this.#pattern.protocol) === this.#pattern.port) {
+        this.#pattern.port = '';
       }
 
       let component: URLPatternKeys;
@@ -375,11 +375,11 @@ export class URLPattern {
       // before the pathname.  We need to know the protocol in order to know
       // which kind of canonicalization to apply.
       for (component of COMPONENTS) {
-        if (!(component in this.pattern))
+        if (!(component in this.#pattern))
           continue;
         const options: Options & ParseOptions = {};
-        const pattern = this.pattern[component];
-        this.names[component] = [];
+        const pattern = this.#pattern[component];
+        this.#names[component] = [];
         switch (component) {
           case 'protocol':
             Object.assign(options, DEFAULT_OPTIONS);
@@ -406,7 +406,7 @@ export class URLPattern {
             options.encodePart = portEncodeCallback;
             break;
           case 'pathname':
-            if (isSpecialScheme(this.regexp.protocol)) {
+            if (isSpecialScheme(this.#regexp.protocol)) {
               Object.assign(options, PATHNAME_OPTIONS, ignoreCaseOptions);
               options.encodePart = standardURLPathnameEncodeCallback;
             } else {
@@ -424,12 +424,12 @@ export class URLPattern {
             break;
         }
         try {
-          this.parts[component] = parse(pattern as string, options);
-          this.regexp[component] = partsToRegexp(this.parts[component], /* out */ this.names[component], options);
-          this.component_pattern[component] = partsToPattern(this.parts[component], options);
+          this.#parts[component] = parse(pattern as string, options);
+          this.#regexp[component] = partsToRegexp(this.#parts[component], /* out */ this.#names[component], options);
+          this.#component_pattern[component] = partsToPattern(this.#parts[component], options);
         } catch (err) {
           // If a pattern is illegal the constructor will throw an exception
-          throw new TypeError(`invalid ${component} pattern '${this.pattern[component]}'.`);
+          throw new TypeError(`invalid ${component} pattern '${this.#pattern[component]}'.`);
         }
       }
     } catch (err: any) {
@@ -470,7 +470,7 @@ export class URLPattern {
 
     let component: URLPatternKeys;
     for (component of COMPONENTS) {
-      if (!this.regexp[component].exec(values[component])) {
+      if (!this.#regexp[component].exec(values[component])) {
         return false;
       }
     }
@@ -518,13 +518,13 @@ export class URLPattern {
 
     let component: URLPatternKeys;
     for (component of COMPONENTS) {
-      let match = this.regexp[component].exec(values[component]);
+      let match = this.#regexp[component].exec(values[component]);
       if (!match) {
         return null;
       }
 
       let groups = {} as Array<string>;
-      for (let [i, name] of this.names[component].entries()) {
+      for (let [i, name] of this.#names[component].entries()) {
         if (typeof name === 'string' || typeof name === 'number') {
           let value = match[i + 1];
           groups[name] = value;
@@ -609,53 +609,53 @@ export class URLPattern {
 
     // If both the left and right components are empty wildcards, then they are
     // effectively equal.
-    if (!left.component_pattern[component] && !right.component_pattern[component]) {
+    if (!left.#component_pattern[component] && !right.#component_pattern[component]) {
       return 0;
     }
 
     // If one side has a real pattern and the other side is an empty component,
     // then we have to compare to a part list with a single full wildcard.
-    if (left.component_pattern[component] && !right.component_pattern[component]) {
-      return comparePartList(left.parts[component], [wildcardOnlyPart]);
+    if (left.#component_pattern[component] && !right.#component_pattern[component]) {
+      return comparePartList(left.#parts[component], [wildcardOnlyPart]);
     }
 
-    if (!left.component_pattern[component] && right.component_pattern[component]) {
-      return comparePartList([wildcardOnlyPart], right.parts[component]);
+    if (!left.#component_pattern[component] && right.#component_pattern[component]) {
+      return comparePartList([wildcardOnlyPart], right.#parts[component]);
     }
 
     // Otherwise compare the part lists of the patterns on each side.
-    return comparePartList(left.parts[component], right.parts[component]);
+    return comparePartList(left.#parts[component], right.#parts[component]);
   }
 
   public get protocol() {
-    return this.component_pattern.protocol;
+    return this.#component_pattern.protocol;
   }
 
   public get username() {
-    return this.component_pattern.username;
+    return this.#component_pattern.username;
   }
 
   public get password() {
-    return this.component_pattern.password;
+    return this.#component_pattern.password;
   }
 
   public get hostname() {
-    return this.component_pattern.hostname;
+    return this.#component_pattern.hostname;
   }
 
   public get port() {
-    return this.component_pattern.port;
+    return this.#component_pattern.port;
   }
 
   public get pathname() {
-    return this.component_pattern.pathname;
+    return this.#component_pattern.pathname;
   }
 
   public get search() {
-    return this.component_pattern.search;
+    return this.#component_pattern.search;
   }
 
   public get hash() {
-    return this.component_pattern.hash;
+    return this.#component_pattern.hash;
   }
 }
