@@ -106,11 +106,8 @@ export class Parser {
             this.#changeState(State.HASH, /*skip=*/1);
           } else if (this.#isSearchPrefix()) {
             this.#changeState(State.SEARCH, /*skip=*/1);
-            this.#internalResult.hash = '';
           } else {
             this.#changeState(State.PATHNAME, /*skip=*/0);
-            this.#internalResult.search = '';
-            this.#internalResult.hash = '';
           }
           continue;
         }
@@ -147,17 +144,6 @@ export class Parser {
       switch (this.#state) {
         case State.INIT:
           if (this.#isProtocolSuffix()) {
-            // We are in absolute mode and we know values will not be inherited
-            // from a base URL.  Therefore initialize the rest of the components
-            // to the empty string.
-            this.#internalResult.username = '';
-            this.#internalResult.password = '';
-            this.#internalResult.hostname = '';
-            this.#internalResult.port = '';
-            this.#internalResult.pathname = '';
-            this.#internalResult.search = '';
-            this.#internalResult.hash = '';
-
             // Update the state to expect the start of an absolute URL.
             this.#rewindAndSetState(State.PROTOCOL);
           }
@@ -178,10 +164,6 @@ export class Parser {
             // empty string values.
             let nextState: State = State.PATHNAME;
             let skip: number = 1;
-
-            if (this.#shouldTreatAsStandardURL) {
-              this.#internalResult.pathname = '/';
-            }
 
             // If there are authority slashes, like `https://`, then
             // we must transition to the authority section of the URLPattern.
@@ -319,6 +301,13 @@ export class Parser {
           break;
       }
     }
+
+    if (this.#internalResult.hostname !== undefined &&
+        this.#internalResult.port === undefined) {
+      // If the hostname is specified in a constructor string but the port is
+      // not, the default port is assumed to be meant.
+      this.#internalResult.port = '';
+    }
   }
 
   #changeState(newState: State, skip: number): void {
@@ -356,6 +345,31 @@ export class Parser {
       case State.DONE:
         // No component to set when transitioning from this state.
         break;
+    }
+
+    if (this.#state !== State.INIT && newState !== State.DONE) {
+      // If hostname, pathname or search is skipped but something appears after
+      // it, then it takes its default value (usually the empty string).
+      if ([State.PROTOCOL, State.AUTHORITY, State.USERNAME, State.PASSWORD]
+              .includes(this.#state) &&
+          [State.PORT, State.PATHNAME, State.SEARCH, State.HASH]
+              .includes(newState)) {
+        this.#internalResult.hostname ??= '';
+      }
+      if ([State.PROTOCOL, State.AUTHORITY, State.USERNAME, State.PASSWORD,
+           State.HOSTNAME, State.PORT]
+              .includes(this.#state) &&
+          [State.SEARCH, State.HASH]
+              .includes(newState)) {
+        this.#internalResult.pathname ??=
+            (this.#shouldTreatAsStandardURL ? '/' : '');
+      }
+      if ([State.PROTOCOL, State.AUTHORITY, State.USERNAME, State.PASSWORD,
+           State.HOSTNAME, State.PORT, State.PATHNAME]
+              .includes(this.#state) &&
+          newState === State.HASH) {
+        this.#internalResult.search ??= '';
+      }
     }
 
     this.#changeStateWithoutSettingComponent(newState, skip);

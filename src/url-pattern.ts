@@ -77,22 +77,44 @@ function processBaseURLString(input: string, isPattern: boolean) {
 function applyInit(o: URLPatternInit, init: URLPatternInit, isPattern: boolean): URLPatternInit {
   // If there is a baseURL we need to apply its component values first.  The
   // rest of the URLPatternInit structure will then later override these
-  // values.  Note, the baseURL will always set either an empty string or
-  // longer value for each considered component.  We do not allow null strings
-  // to persist for these components past this phase since they should no
-  // longer be treated as wildcards.
+  // values.
   let baseURL;
   if (typeof init.baseURL === 'string') {
     try {
       baseURL = new URL(init.baseURL);
-      o.protocol = processBaseURLString(baseURL.protocol.substring(0, baseURL.protocol.length - 1), isPattern);
-      o.username = processBaseURLString(baseURL.username, isPattern);
-      o.password = processBaseURLString(baseURL.password, isPattern);
-      o.hostname = processBaseURLString(baseURL.hostname, isPattern);
-      o.port = processBaseURLString(baseURL.port, isPattern);
-      o.pathname = processBaseURLString(baseURL.pathname, isPattern);
-      o.search = processBaseURLString(baseURL.search.substring(1, baseURL.search.length), isPattern);
-      o.hash = processBaseURLString(baseURL.hash.substring(1, baseURL.hash.length), isPattern);
+      if (init.protocol === undefined) {
+        o.protocol = processBaseURLString(baseURL.protocol.substring(0, baseURL.protocol.length - 1), isPattern);
+      }
+      if (!isPattern && init.protocol === undefined && init.hostname === undefined &&
+          init.port === undefined && init.username === undefined) {
+        o.username = processBaseURLString(baseURL.username, isPattern);
+      }
+      if (!isPattern && init.protocol === undefined && init.hostname === undefined &&
+          init.port === undefined && init.username === undefined &&
+          init.password === undefined) {
+        o.password = processBaseURLString(baseURL.password, isPattern);
+      }
+      if (init.protocol === undefined && init.hostname === undefined) {
+        o.hostname = processBaseURLString(baseURL.hostname, isPattern);
+      }
+      if (init.protocol === undefined && init.hostname === undefined &&
+          init.port === undefined) {
+        o.port = processBaseURLString(baseURL.port, isPattern);
+      }
+      if (init.protocol === undefined && init.hostname === undefined &&
+          init.port === undefined && init.pathname === undefined) {
+        o.pathname = processBaseURLString(baseURL.pathname, isPattern);
+      }
+      if (init.protocol === undefined && init.hostname === undefined &&
+          init.port === undefined && init.pathname === undefined &&
+          init.search === undefined) {
+        o.search = processBaseURLString(baseURL.search.substring(1, baseURL.search.length), isPattern);
+      }
+      if (init.protocol === undefined && init.hostname === undefined &&
+          init.port === undefined && init.pathname === undefined &&
+          init.search === undefined && init.hash === undefined) {
+        o.hash = processBaseURLString(baseURL.hash.substring(1, baseURL.hash.length), isPattern);
+      }
     } catch {
       throw new TypeError(`invalid baseURL '${init.baseURL}'.`);
     }
