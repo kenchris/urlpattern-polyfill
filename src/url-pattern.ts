@@ -340,6 +340,7 @@ export class URLPattern {
   #names: string[] = {};
   #component_pattern: any = {};
   #parts: any = {};
+  #hasRegExpGroups: boolean = false;
 
   constructor(init: URLPatternInit | string, baseURL?: string, options?: URLPatternOptions);
   constructor(init: URLPatternInit | string, options?: URLPatternOptions);
@@ -449,6 +450,8 @@ export class URLPattern {
           this.#parts[component] = parse(pattern as string, options);
           this.#regexp[component] = partsToRegexp(this.#parts[component], /* out */ this.#names[component], options);
           this.#component_pattern[component] = partsToPattern(this.#parts[component], options);
+          this.#hasRegExpGroups = this.#hasRegExpGroups ||
+                                  this.#parts[component].some((p: Part) => p.type === PartType.kRegex);
         } catch (err) {
           // If a pattern is illegal the constructor will throw an exception
           throw new TypeError(`invalid ${component} pattern '${this.#pattern[component]}'.`);
@@ -679,5 +682,9 @@ export class URLPattern {
 
   public get hash() {
     return this.#component_pattern.hash;
+  }
+
+  public get hasRegExpGroups() {
+    return this.#hasRegExpGroups;
   }
 }
