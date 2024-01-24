@@ -1,11 +1,11 @@
-export type URLPatternInput = URLPatternInit | string;
+export type URLPatternArgs =
+  | [URLPatternInit | RegExp | undefined]
+  | [string, string | undefined];
 
 export declare class URLPattern {
-  constructor(init?: URLPatternInput, baseURL?: string);
-
-  test(input?: URLPatternInput, baseURL?: string): boolean;
-
-  exec(input?: URLPatternInput, baseURL?: string): URLPatternResult | null;
+  constructor(...args: URLPatternArgs);
+  test(...args: URLPatternArgs): boolean;
+  exec(...args: URLPatternArgs): URLPatternResult | null;
 
   readonly protocol: string;
   readonly username: string;
@@ -17,20 +17,20 @@ export declare class URLPattern {
   readonly hash: string;
 }
 
-interface URLPatternInit {
-  baseURL?: string;
+export interface URLPatternInit {
+  protocol?: string;
   username?: string;
   password?: string;
-  protocol?: string;
   hostname?: string;
   port?: string;
   pathname?: string;
   search?: string;
   hash?: string;
+  baseURL?: string;
 }
 
 export interface URLPatternResult {
-  inputs: [URLPatternInput];
+  inputs: URLPatternArgs;
   protocol: URLPatternComponentResult;
   username: URLPatternComponentResult;
   password: URLPatternComponentResult;
