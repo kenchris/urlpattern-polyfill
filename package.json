@@ -68,7 +68,7 @@
   },
   "wireit": {
     "build:esm": {
-      "command": "esbuild --bundle --format=esm src/url-pattern.ts --outfile=dist/urlpattern.js --minify --target=es2022",
+      "command": "esbuild --bundle --format=esm src/url-pattern.ts --outfile=dist/urlpattern.js --minify --keep-names --target=es2022",
       "output": [
         "dist/urlpattern.js"
       ],
@@ -77,7 +77,7 @@
       ]
     },
     "build:cjs": {
-      "command": "esbuild --bundle --format=cjs src/url-pattern.ts --outfile=dist/urlpattern.cjs --minify --target=es2022",
+      "command": "esbuild --bundle --format=cjs src/url-pattern.ts --outfile=dist/urlpattern.cjs --minify --keep-names --target=es2022",
       "output": [
         "dist/urlpattern.cjs"
       ],

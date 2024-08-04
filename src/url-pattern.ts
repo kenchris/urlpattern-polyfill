@@ -462,6 +462,10 @@ export class URLPattern {
     }
   }
 
+  get [Symbol.toStringTag]() {
+    return "URLPattern"
+  }
+
   test(input: string | URLPatternInit = {}, baseURL?: string) {
     let values: URLPatternInit = {
       pathname: '',
